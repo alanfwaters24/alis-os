@@ -17,7 +17,7 @@
 - Home Assistant + Matter from `alis-os-home` moved in as `alis.homeAssistant.enable`.
 - Kiosk = cage + Chromium full-screen, self-restarting. Desktop/laptop = greetd login + ALIS-coloured sway with the dashboard on workspace 1.
 - `nix flake check` builds an example machine for every role.
-- Live ISO build + QEMU boot test in progress at time of first commit.
+- Live ISO built (2.1 GB) and boot-tested in QEMU (no KVM): boots unattended to the full-screen dashboard in ~4 min. Chromium asks for location on first load — kiosk permission policy still to decide.
 
 **Decisions:**
 - No new kernel: Linux + NixOS underneath, ALIS on top (SteamOS/ChromeOS model) — rollback, one-file rebuilds, fits "repurposed hardware".
