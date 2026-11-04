@@ -22,14 +22,12 @@ in
   config = lib.mkMerge [
     {
       alis.kiosk.command = lib.concatStringsSep " " ([
-        "${pkgs.chromium}/bin/chromium"
-        "--app=${config.alis.dashboard.url}"
+        "${config.alis.dashboard.openCommand}/bin/alis-open-dashboard"
         "--kiosk"
         "--no-first-run"
         "--noerrdialogs"
         "--disable-infobars"
         "--disable-session-crashed-bubble"
-        "--password-store=basic"
         "--ozone-platform=wayland"
       ] ++ cfg.browserFlags);
     }
@@ -39,7 +37,7 @@ in
     (lib.mkIf (!(lib.elem config.alis.role [ "server" "brain" ])) {
       programs.chromium = {
         enable = true;
-        extraOpts.AudioCaptureAllowedUrls = [ config.alis.dashboard.url ];
+        extraOpts.AudioCaptureAllowedUrls = lib.unique [ config.alis.dashboard.url config.alis.dashboard.localUrl ];
       };
     })
 
@@ -69,6 +67,8 @@ in
         extraArguments = [ "-d" ]; # no window decorations
       };
       # Bring the dashboard back if it ever crashes or is closed.
+      # (If NEST was down at power-on, the kiosk shows the built-in copy;
+      # it switches back to the live NEST the next time the screen restarts.)
       systemd.services."cage-tty1" = {
         after = [ "alis-dashboard.service" "network-online.target" ];
         wants = [ "network-online.target" ];

@@ -98,6 +98,10 @@ alis.modules.arcade.mode = "off";
   addresses. Change with `alis.network = "lan"` or `"tailscale"`.
 - Every module's address is in `/etc/alis/connect.json` and given to every ALIS
   app as `ALIS_<NAME>_URL` (e.g. `ALIS_HOMEASSISTANT_URL`).
+- **Dashboard fallback:** PCs, laptops and kiosks open the live NEST, but if it
+  doesn't answer within 4 seconds (Brain down, laptop away from home) they show
+  the dashboard copy built into ALIS OS instead, so there's never a blank window.
+  (`alis.dashboard.fallbackAfter` changes the wait.)
 - NEST (alis-live) reads `ha_url` from its own `config.json`, which already
   defaults to your Home Assistant at 192.168.1.251.
 - **Can be built in today:** NEST, alis-push, GLANCE, Home Assistant, voice,
