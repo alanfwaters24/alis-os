@@ -1,5 +1,5 @@
 # Server role — mini PC / VMs. No screen, no desktop. Runs ALIS modules
-# (alis.apps.*) and optionally Home Assistant (alis.homeAssistant.enable).
+# (alis.apps.*); set alis.modules.<name>.mode = "builtin" to run one here.
 { config, lib, ... }:
 {
   config = lib.mkIf (lib.elem config.alis.role [ "server" "brain" ]) {

@@ -12,6 +12,8 @@ in
   ];
 
   alis.role = "kiosk";
+  # Test image: show the dashboard baked into the image, not the live NEST.
+  alis.modules.nest.mode = "off";
   networking.hostName = "alis-live-test";
   system.stateVersion = "26.05";
 

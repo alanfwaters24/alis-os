@@ -75,9 +75,7 @@
         # An office PC linked to the existing Brain, HA and NAS shares.
         desktop-existing-brain = (mkAlis [{
           alis.role = "desktop";
-          alis.brain.url = "http://192.168.1.235:8080";
-          alis.brain.voiceHost = "192.168.1.251";
-          alis.homeAssistant.url = "http://192.168.1.251:8123";
+          alis.modules.fuel.mode = "link";
           alis.nas.shares = { stash = { }; alan = { mount = false; }; };
           networking.hostName = "alis-example-desktop-linked";
           fileSystems."/" = { device = "/dev/disk/by-label/nixos"; fsType = "ext4"; };
@@ -87,7 +85,7 @@
         # A Brain that uses an existing Home Assistant instead of its own.
         brain-existing-ha = (mkAlis [{
           alis.role = "brain";
-          alis.homeAssistant.url = "http://192.168.1.251:8123";
+          alis.modules.homeassistant.mode = "link";
           networking.hostName = "alis-example-brain-ha";
           fileSystems."/" = { device = "/dev/disk/by-label/nixos"; fsType = "ext4"; };
           boot.loader.systemd-boot.enable = true;

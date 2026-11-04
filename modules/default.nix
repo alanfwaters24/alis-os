@@ -14,6 +14,7 @@
     ./branding.nix
     ./dashboard.nix
     ./apps.nix
+    ./modules.nix
     ./home-assistant.nix
     ./nas.nix
     ../roles/kiosk.nix

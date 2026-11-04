@@ -17,15 +17,17 @@ in
     };
     url = lib.mkOption {
       type = lib.types.str;
-      default = if config.alis.brain.url != null then config.alis.brain.url else "http://localhost:${toString cfg.port}";
+      default =
+        let nest = config.alis.modules.nest; in
+        if nest.mode != "off" then nest.effectiveUrl else "http://localhost:${toString cfg.port}";
       description = ''
-        What the screen shows. Defaults to the existing Brain's NEST if
-        alis.brain.url is set, otherwise the copy baked into this machine.
+        What the screen shows: NEST (built in or linked, see alis.modules.nest),
+        or the copy of alis-dashboard baked into this machine when NEST is off.
       '';
     };
     serveLocally = lib.mkOption {
       type = lib.types.bool;
-      default = !(lib.elem config.alis.role [ "server" "brain" ]) && config.alis.brain.url == null;
+      default = !(lib.elem config.alis.role [ "server" "brain" ]) && config.alis.modules.nest.mode == "off";
       description = "Run the bundled dashboard on this machine.";
     };
   };
