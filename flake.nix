@@ -11,9 +11,15 @@
       url = "github:alanfwaters24/alis-dashboard";
       flake = false;
     };
+
+    # Brain-role modules (private repos, code only — no secrets: each app's
+    # config.json / .env / data stay on the machine, see modules/apps.nix).
+    alis-live = { url = "github:alanfwaters24/alis-live"; flake = false; };
+    alis-push = { url = "github:alanfwaters24/alis-push"; flake = false; };
+    glance = { url = "github:alanfwaters24/glance"; flake = false; };
   };
 
-  outputs = { self, nixpkgs, alis-dashboard }:
+  outputs = { self, nixpkgs, alis-dashboard, alis-live, alis-push, glance }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -22,6 +28,7 @@
       alisModule = {
         imports = [ ./modules ];
         alis.dashboard.src = alis-dashboard;
+        alis.brain.sources = { inherit alis-live alis-push glance; };
       };
 
       mkAlis = extraModules: nixpkgs.lib.nixosSystem {
@@ -50,13 +57,17 @@
 
       # `nix flake check` builds one example machine per role, so a change
       # that breaks e.g. the server role is caught before it reaches a real box.
-      checks.${system} = nixpkgs.lib.genAttrs [ "kiosk" "desktop" "laptop" "server" ] (role:
+      checks.${system} = nixpkgs.lib.genAttrs [ "kiosk" "desktop" "laptop" "server" "brain" ] (role:
         (mkAlis [{
           alis.role = role;
           networking.hostName = "alis-example-${role}";
           fileSystems."/" = { device = "/dev/disk/by-label/nixos"; fsType = "ext4"; };
           boot.loader.systemd-boot.enable = true;
           system.stateVersion = "26.05";
-        }]).config.system.build.toplevel);
+        }]).config.system.build.toplevel)
+      // {
+        # Boots a Brain in a VM and checks each service answers.
+        brain-boot = import ./tests/brain.nix { inherit pkgs alisModule; };
+      };
     };
 }

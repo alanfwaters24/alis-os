@@ -25,6 +25,7 @@ your own OS around it.
 | `desktop` | Office PC | ALIS login screen → ALIS-coloured desktop (sway). Workspace 1 is the dashboard; terminal, Chromium, Firefox, Files. |
 | `laptop` | Spare/old laptops | Desktop + battery saving, Bluetooth, suspend on lid close. |
 | `server` | Mini PC / VMs | No screen. Runs ALIS modules (`alis.apps.*`) and optionally Home Assistant. |
+| `brain` | The ALIS Brain (mini PC) | A server with the whole Brain stack on — see below. |
 
 ```nix
 alis.role = "kiosk";
@@ -37,6 +38,33 @@ alis.dashboard.url = "http://192.168.1.235:8080";   # optional: show the live NE
 
 ### Desktop keys
 `Win+Enter` terminal · `Win+D` app menu · `Win+A` dashboard · `Win+Q` close · `Win+F` full-screen · `Win+L` lock · `Win+1..5` workspaces · `Win+Shift+E` log out
+
+## The Brain role
+
+`alis.role = "brain";` turns a machine into the ALIS Brain: what's spread
+over the Brain VM and dev-automation today, on one box. Ports match
+`alis-core/ports_and_env.json`.
+
+| Piece | Port | Where it comes from |
+|---|---|---|
+| Home Assistant + Matter | 8123 | NixOS (settings from alis-os-home) |
+| Whisper — speech → text | 10300 (Wyoming) | NixOS |
+| Piper — text → speech | 10200 (Wyoming) | NixOS, voice `en_GB-southern_english_female-low` |
+| openWakeWord — "Hey ALIS" | 10400 (Wyoming) | NixOS |
+| Ollama — local AI | 11434 | NixOS (no models downloaded unless listed in `alis.brain.ollama.models`) |
+| NEST + shared brain (`/api/brain`) | 8080 / 8443 | `alis-live` repo |
+| alis-push | 8091 · TS 10001 | `alis-push` repo |
+| GLANCE | 3512 · TS 10006 | `glance` repo |
+
+Switch any piece off on its own, e.g. `alis.brain.ollama.enable = false;`.
+
+**Per-machine settings never come from git.** Each module's `config.json`,
+`.env`, `data/` and certificates live only in `/var/lib/alis/<module>/` on
+the machine. Put them there by hand once (e.g. copy NEST's `config.json`
+across). Code updates replace the code, never those files.
+
+**Not in yet:** STALL. It's a Node app with native add-ons (`sharp`,
+`better-sqlite3`) that need their own packaging step — next stage.
 
 ## ALIS modules as services
 
@@ -64,15 +92,16 @@ modules/             what ALIS adds to Linux
   branding.nix       "ALIS OS" name, boot splash, console colours
   dashboard.nix      bundled ALIS dashboard served on localhost:8080
   apps.nix           shared ALIS module service template + port-clash check
-  home-assistant.nix Home Assistant + Matter (moved over from alis-os-home)
-roles/               kiosk / desktop / laptop / server
+  home-assistant.nix Home Assistant + Matter (copied over from alis-os-home)
+roles/               kiosk / desktop / laptop / server / brain
+tests/brain.nix      boots a Brain in a VM and checks every service answers
 hosts/live-test.nix  Stage 1 live test image
 artwork/             logo + splash, drawn from the ALIS Glass palette
 ```
 
 ## Building
 
-The dashboard repo is private, so Nix needs your GitHub login once:
+The ALIS module repos (dashboard, alis-live, alis-push, glance) are private, so Nix needs your GitHub login once:
 
 ```bash
 mkdir -p ~/.config/nix
@@ -105,6 +134,7 @@ another network those will show as offline. That's expected.
 
 - [x] **Stage 1:** bootable live test image → ALIS dashboard
 - [ ] **Stage 2:** ALIS installer, real host files (`hosts/office-pc.nix`, `hosts/fridge-tablet.nix`…), first real kiosk
-- [ ] **Stage 3:** move ALIS modules (NOVA first, per the migration order) into `alis.apps` on a server-role box
+- [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
+- [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
 - [ ] **Stage 4:** auto-updates from this repo + nightly backup to VAULT built in
 - [ ] **Later:** ALIS Glass fonts (Exo 2 / Rajdhani / Share Tech Mono) packaged locally, graphical ALIS greeter, Plymouth theme with the rotating ring

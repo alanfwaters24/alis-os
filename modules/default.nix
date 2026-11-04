@@ -6,6 +6,7 @@
 #   alis.role = "desktop";  # office PC — full ALIS desktop with the dashboard as home screen
 #   alis.role = "laptop";   # spare laptops — desktop + battery / Wi-Fi / Bluetooth
 #   alis.role = "server";   # mini PC / VMs — no screen, runs ALIS modules as services
+#   alis.role = "brain";    # the ALIS Brain — server + HA, voice, AI, NEST, alis-push, GLANCE
 { lib, ... }:
 {
   imports = [
@@ -18,10 +19,11 @@
     ../roles/desktop.nix
     ../roles/laptop.nix
     ../roles/server.nix
+    ../roles/brain.nix
   ];
 
   options.alis.role = lib.mkOption {
-    type = lib.types.enum [ "kiosk" "desktop" "laptop" "server" ];
+    type = lib.types.enum [ "kiosk" "desktop" "laptop" "server" "brain" ];
     description = "What kind of ALIS machine this is.";
   };
 }

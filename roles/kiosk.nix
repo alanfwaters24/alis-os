@@ -36,7 +36,7 @@ in
 
     # Screens with a browser: the ALIS dashboard may use the microphone
     # ("Hey ALIS") without a pop-up. Other sites still ask as normal.
-    (lib.mkIf (config.alis.role != "server") {
+    (lib.mkIf (!(lib.elem config.alis.role [ "server" "brain" ])) {
       programs.chromium = {
         enable = true;
         extraOpts.AudioCaptureAllowedUrls = [ config.alis.dashboard.url ];

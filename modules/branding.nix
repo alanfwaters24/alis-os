@@ -15,8 +15,8 @@ in
     theme = "spinner";
     logo = "${artwork}/logo.png";
   };
-  boot.consoleLogLevel = 3;
-  boot.initrd.verbose = false;
+  boot.consoleLogLevel = lib.mkDefault 3;
+  boot.initrd.verbose = lib.mkDefault false;
   boot.kernelParams = [ "quiet" "splash" "udev.log_level=3" ];
 
   # ALIS Glass colours on the text console too (16 colours, no '#').

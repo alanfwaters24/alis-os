@@ -25,7 +25,7 @@ in
     };
     serveLocally = lib.mkOption {
       type = lib.types.bool;
-      default = config.alis.role != "server";
+      default = !(lib.elem config.alis.role [ "server" "brain" ]);
       description = "Run the bundled dashboard on this machine.";
     };
   };
