@@ -22,8 +22,8 @@ your own OS around it.
 | Role | For | What you get |
 |---|---|---|
 | `kiosk` | Wall / fridge tablets | Powers on → dashboard full-screen. No login, can't be closed (restarts itself). |
-| `desktop` | Office PC | ALIS login screen → ALIS-coloured desktop (sway). Workspace 1 is the dashboard; terminal, Chromium, Firefox, Files. |
-| `laptop` | Spare/old laptops | Desktop + battery saving, Bluetooth, suspend on lid close. |
+| `desktop` | Office PC | A full PC desktop (KDE Plasma) dressed as ALIS — see below. |
+| `laptop` | Spare/old laptops | Desktop + battery modes, suspend on lid close, firmware updates. |
 | `server` | Mini PC / VMs | No screen. Runs ALIS modules (`alis.apps.*`) and optionally Home Assistant. |
 | `brain` | The ALIS Brain (mini PC) | A server with the whole Brain stack on — see below. |
 
@@ -36,8 +36,35 @@ alis.dashboard.url = "http://192.168.1.235:8080";   # optional: show the live NE
 - **Kiosk:** no pop-ups ever. The dashboard gets the microphone ("Hey ALIS") and location automatically; mic/camera are blocked for anything else, notifications off. Kiosk mode can't leave the dashboard.
 - **Desktop/laptop:** the dashboard gets the mic without asking; every other site asks as normal.
 
-### Desktop keys
-`Win+Enter` terminal · `Win+D` app menu · `Win+A` dashboard · `Win+Q` close · `Win+F` full-screen · `Win+L` lock · `Win+1..5` workspaces · `Win+Shift+E` log out
+### The desktop (office PC / laptops)
+
+KDE Plasma underneath (Windows-style taskbar and start menu, real glass/blur
+effects), with the ALIS Glass colour scheme, wallpaper and login screen
+applied on first login. The **ALIS Dashboard** opens as its own app window
+on login and sits in the start menu.
+
+| You want | App |
+|---|---|
+| File explorer | Dolphin |
+| Web browser | Chromium (open-source Chrome) |
+| Office (Word/Excel/PowerPoint files) | OnlyOffice |
+| Notepad / text editor | KWrite, Kate |
+| Calculator | KCalc |
+| Storage — what's using space / drives | Filelight, Partition Manager |
+| Zip files / downloads | Ark (Downloads folder in your home folder) |
+| Photos, PDFs, screenshots | Gwenview, Okular, Spectacle |
+| More apps | Discover (app store, with Flathub) |
+| Settings & themes | System Settings → Appearance (ALIS Glass is the default colour scheme) |
+
+## Using your existing Home Assistant
+
+```nix
+alis.homeAssistant.url = "http://192.168.1.251:8123";
+```
+
+The Brain then doesn't run its own Home Assistant, and every ALIS module is
+given the address as `ALIS_HA_URL` (also in `/etc/alis/ha-url`). NEST reads
+`ha_url` from its own `config.json`, which already defaults to that address.
 
 ## The Brain role
 
