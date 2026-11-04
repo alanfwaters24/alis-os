@@ -31,6 +31,10 @@ alis.role = "kiosk";
 alis.dashboard.url = "http://192.168.1.235:8080";   # optional: show the live NEST instead of the built-in copy
 ```
 
+### Browser permissions
+- **Kiosk:** no pop-ups ever. The dashboard gets the microphone ("Hey ALIS") and location automatically; mic/camera are blocked for anything else, notifications off. Kiosk mode can't leave the dashboard.
+- **Desktop/laptop:** the dashboard gets the mic without asking; every other site asks as normal.
+
 ### Desktop keys
 `Win+Enter` terminal · `Win+D` app menu · `Win+A` dashboard · `Win+Q` close · `Win+F` full-screen · `Win+L` lock · `Win+1..5` workspaces · `Win+Shift+E` log out
 

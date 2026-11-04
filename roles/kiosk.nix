@@ -34,7 +34,26 @@ in
       ] ++ cfg.browserFlags);
     }
 
+    # Screens with a browser: the ALIS dashboard may use the microphone
+    # ("Hey ALIS") without a pop-up. Other sites still ask as normal.
+    (lib.mkIf (config.alis.role != "server") {
+      programs.chromium = {
+        enable = true;
+        extraOpts.AudioCaptureAllowedUrls = [ config.alis.dashboard.url ];
+      };
+    })
+
     (lib.mkIf (config.alis.role == "kiosk") {
+      # Kiosks have nobody to tap pop-ups. Kiosk mode can't leave the
+      # dashboard, so "allow location" here only ever reaches the dashboard;
+      # the mic is blocked for anything that isn't the dashboard address.
+      programs.chromium.extraOpts = {
+        DefaultGeolocationSetting = 1;
+        AudioCaptureAllowed = false;
+        VideoCaptureAllowed = false;
+        DefaultNotificationsSetting = 2;
+      };
+
       # Unprivileged screen user — can't sudo, can't change the system.
       users.users.alis-screen = {
         isNormalUser = true;
