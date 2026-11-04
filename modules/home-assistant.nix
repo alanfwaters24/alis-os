@@ -32,7 +32,6 @@ in
 
     (lib.mkIf (cfg.url != null) {
       environment.etc."alis/ha-url".text = cfg.url;
-      environment.variables.ALIS_HA_URL = cfg.url;
     })
 
     (lib.mkIf cfg.enable {

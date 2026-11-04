@@ -56,6 +56,41 @@ on login and sits in the start menu.
 | More apps | Discover (app store, with Flathub) |
 | Settings & themes | System Settings → Appearance (ALIS Glass is the default colour scheme) |
 
+## NAS storage (VAULT)
+
+PCs and laptops show NAS shares in the file explorer (Dolphin) sidebar.
+
+```nix
+alis.nas.shares = {
+  stash = { };                  # shared household drive: always mounted at /mnt/nas/stash
+  alan  = { mount = false; };   # personal: sidebar link, each person logs in with their own NAS account
+};
+```
+
+- **Mounted** shares use one shared NAS login kept on the machine. Put it there once:
+  `sudo install -m 600 /dev/stdin /etc/alis/nas-credentials` then type
+  `username=...` and `password=...` on two lines and press Ctrl+D.
+- **Links** ask for the person's own NAS login the first time; KDE remembers it.
+- If VAULT is off, nothing hangs: the drive just doesn't open (10-second timeout).
+- `stash` is linked by default. Away from home, set `alis.nas.host` to VAULT's Tailscale name.
+
+## Using your existing Brain
+
+Any ALIS OS machine can use the Brain you already have instead of running
+its own. Set the pieces you have; the matching built-in pieces switch off:
+
+```nix
+alis.brain.url       = "http://192.168.1.235:8080";   # NEST + shared brain → screens show this
+alis.brain.voiceHost = "192.168.1.251";               # Whisper / Piper / openWakeWord
+alis.brain.ollamaUrl = "http://192.168.1.251:11434";
+alis.brain.pushUrl   = "http://192.168.1.235:8091";
+alis.homeAssistant.url = "http://192.168.1.251:8123";
+```
+
+The addresses are written to `/etc/alis/connect.json` and given to every ALIS
+module as `ALIS_BRAIN_URL`, `ALIS_VOICE_HOST`, `ALIS_OLLAMA_URL`,
+`ALIS_PUSH_URL` and `ALIS_HA_URL`.
+
 ## Using your existing Home Assistant
 
 ```nix
@@ -63,7 +98,7 @@ alis.homeAssistant.url = "http://192.168.1.251:8123";
 ```
 
 The Brain then doesn't run its own Home Assistant, and every ALIS module is
-given the address as `ALIS_HA_URL` (also in `/etc/alis/ha-url`). NEST reads
+given the address as `ALIS_HA_URL` (also in `/etc/alis/ha-url` and `/etc/alis/connect.json`). NEST reads
 `ha_url` from its own `config.json`, which already defaults to that address.
 
 ## The Brain role
@@ -119,7 +154,8 @@ modules/             what ALIS adds to Linux
   branding.nix       "ALIS OS" name, boot splash, console colours
   dashboard.nix      bundled ALIS dashboard served on localhost:8080
   apps.nix           shared ALIS module service template + port-clash check
-  home-assistant.nix Home Assistant + Matter (copied over from alis-os-home)
+  home-assistant.nix Home Assistant + Matter (copied over from alis-os-home), or use an existing one
+  nas.nix            NAS shares: mounted drives + file-explorer links
 roles/               kiosk / desktop / laptop / server / brain
 tests/brain.nix      boots a Brain in a VM and checks every service answers
 hosts/live-test.nix  Stage 1 live test image

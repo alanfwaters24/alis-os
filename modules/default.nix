@@ -15,6 +15,7 @@
     ./dashboard.nix
     ./apps.nix
     ./home-assistant.nix
+    ./nas.nix
     ../roles/kiosk.nix
     ../roles/desktop.nix
     ../roles/laptop.nix

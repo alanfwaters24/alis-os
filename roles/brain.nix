@@ -20,6 +20,34 @@ let
 in
 {
   options.alis.brain = {
+    # ---- Use an EXISTING Brain instead of the built-in one -----------------
+    # Works on any role. Set what you already have; the matching built-in
+    # piece is switched off and everything on this machine points there.
+    url = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "http://192.168.1.235:8080";
+      description = "Existing NEST + shared brain (alis-live). Screens show it; built-in NEST is off.";
+    };
+    voiceHost = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "192.168.1.251";
+      description = "Existing Whisper/Piper/openWakeWord host (ports 10300/10200/10400). Built-in voice is off.";
+    };
+    ollamaUrl = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "http://192.168.1.251:11434";
+      description = "Existing Ollama. Built-in Ollama is off.";
+    };
+    pushUrl = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "http://192.168.1.235:8091";
+      description = "Existing alis-push. Built-in alis-push is off.";
+    };
+
     sources = lib.mkOption {
       type = lib.types.attrsOf lib.types.path;
       default = { };
@@ -27,13 +55,13 @@ in
     };
 
     voice = {
-      enable = lib.mkOption { type = lib.types.bool; default = true; description = "Whisper + Piper + openWakeWord."; };
+      enable = lib.mkOption { type = lib.types.bool; default = cfg.voiceHost == null; description = "Whisper + Piper + openWakeWord."; };
       whisperModel = lib.mkOption { type = lib.types.str; default = "small-int8"; description = "Bigger = more accurate, slower on CPU."; };
       piperVoice = lib.mkOption { type = lib.types.str; default = "en_GB-southern_english_female-low"; description = "Current ALIS voice (ports_and_env.json)."; };
     };
 
     ollama = {
-      enable = lib.mkOption { type = lib.types.bool; default = true; };
+      enable = lib.mkOption { type = lib.types.bool; default = cfg.ollamaUrl == null; };
       models = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
@@ -42,12 +70,30 @@ in
       };
     };
 
-    nest.enable = lib.mkOption { type = lib.types.bool; default = true; description = "NEST dashboard server (alis-live) incl. the shared ALIS brain."; };
-    push.enable = lib.mkOption { type = lib.types.bool; default = true; description = "alis-push notification server."; };
+    nest.enable = lib.mkOption { type = lib.types.bool; default = cfg.url == null; description = "NEST dashboard server (alis-live) incl. the shared ALIS brain."; };
+    push.enable = lib.mkOption { type = lib.types.bool; default = cfg.pushUrl == null; description = "alis-push notification server."; };
     glance.enable = lib.mkOption { type = lib.types.bool; default = true; description = "GLANCE daily brief."; };
   };
 
-  config = lib.mkIf isBrain (lib.mkMerge [
+  config = lib.mkMerge [
+  # Tell every ALIS module (and anything else) where the existing pieces are.
+  (let
+    connect = lib.filterAttrs (_: v: v != null) {
+      brain = cfg.url;
+      voice = cfg.voiceHost;
+      ollama = cfg.ollamaUrl;
+      push = cfg.pushUrl;
+      homeAssistant = config.alis.homeAssistant.url;
+    };
+    envNames = { brain = "ALIS_BRAIN_URL"; voice = "ALIS_VOICE_HOST"; ollama = "ALIS_OLLAMA_URL"; push = "ALIS_PUSH_URL"; homeAssistant = "ALIS_HA_URL"; };
+    env = lib.mapAttrs' (k: v: lib.nameValuePair envNames.${k} v) connect;
+  in lib.mkIf (connect != { }) {
+    environment.etc."alis/connect.json".text = builtins.toJSON connect;
+    environment.variables = env;
+    alis.appsEnvironment = env;
+  })
+
+  (lib.mkIf isBrain (lib.mkMerge [
     # Runs its own HA unless pointed at an existing one (alis.homeAssistant.url).
     { alis.homeAssistant.enable = lib.mkDefault (config.alis.homeAssistant.url == null); }
 
@@ -117,5 +163,6 @@ in
         command = "${python}/bin/python3 server.py";
       };
     })
-  ]);
+  ]))
+  ];
 }

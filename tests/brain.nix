@@ -37,7 +37,8 @@ pkgs.testers.runNixOSTest {
 
     with subtest("NEST + shared brain"):
         brain.wait_for_open_port(8080)
-        brain.succeed("curl -sf http://127.0.0.1:8080/ | grep -qi 'A.L.I.S'")
+        brain.succeed("curl -sf -o /tmp/nest.html http://127.0.0.1:8080/")
+        brain.succeed("grep -qi 'A.L.I.S' /tmp/nest.html")
 
     with subtest("openWakeWord"):
         brain.wait_for_open_port(10400)

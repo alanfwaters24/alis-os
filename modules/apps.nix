@@ -47,6 +47,12 @@ let
   '';
 in
 {
+  options.alis.appsEnvironment = lib.mkOption {
+    type = lib.types.attrsOf lib.types.str;
+    default = { };
+    description = "Variables given to every ALIS module (e.g. where the existing Brain / HA are).";
+  };
+
   options.alis.apps = lib.mkOption {
     default = { };
     description = "ALIS modules (NEST, GLANCE, alis-push...) run as systemd services.";
@@ -97,9 +103,7 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
-      environment = { PORT = toString a.port; }
-        // lib.optionalAttrs (config.alis.homeAssistant.url != null) { ALIS_HA_URL = config.alis.homeAssistant.url; }
-        // a.environment;
+      environment = { PORT = toString a.port; } // config.alis.appsEnvironment // a.environment;
       serviceConfig = {
         ExecStartPre = lib.optional (a.src != null) "${linkSrc a}";
         ExecStart = "${pkgs.bash}/bin/bash -c ${lib.escapeShellArg "exec ${a.command}"}";

@@ -17,15 +17,15 @@ in
     };
     url = lib.mkOption {
       type = lib.types.str;
-      default = "http://localhost:${toString cfg.port}";
+      default = if config.alis.brain.url != null then config.alis.brain.url else "http://localhost:${toString cfg.port}";
       description = ''
-        What the screen shows. Defaults to the copy baked into this machine.
-        Point it at the live NEST instead with e.g. "http://192.168.1.235:8080".
+        What the screen shows. Defaults to the existing Brain's NEST if
+        alis.brain.url is set, otherwise the copy baked into this machine.
       '';
     };
     serveLocally = lib.mkOption {
       type = lib.types.bool;
-      default = !(lib.elem config.alis.role [ "server" "brain" ]);
+      default = !(lib.elem config.alis.role [ "server" "brain" ]) && config.alis.brain.url == null;
       description = "Run the bundled dashboard on this machine.";
     };
   };
