@@ -19,7 +19,7 @@ let
     name = "alis-dashboard";
     desktopName = "ALIS Dashboard";
     genericName = "ALIS home";
-    exec = "${pkgs.chromium}/bin/chromium --app=${config.alis.dashboard.url} --class=alis-dashboard";
+    exec = "${pkgs.chromium}/bin/chromium --app=${config.alis.dashboard.url} --class=alis-dashboard --password-store=basic";
     icon = "${artwork}/logo.png";
     categories = [ "Utility" ];
     startupWMClass = "alis-dashboard";
@@ -45,6 +45,10 @@ in
       wayland.enable = true;
     };
     services.displayManager.defaultSession = "plasma";
+    # Unlock the KDE Wallet (saved passwords) with the login password, so
+    # nothing pops up asking to set one up.
+    security.pam.services.sddm.kwallet.enable = true;
+    security.pam.services.login.kwallet.enable = true;
 
     environment.systemPackages = (with pkgs; [
       theme

@@ -46,7 +46,7 @@ let
     name = "alis-${n}";
     desktopName = "ALIS · ${m.title}";
     comment = m.about;
-    exec = "${pkgs.chromium}/bin/chromium --app=${m.effectiveUrl} --class=alis-${n}";
+    exec = "${pkgs.chromium}/bin/chromium --app=${m.effectiveUrl} --class=alis-${n} --password-store=basic";
     icon = "${pkgs.callPackage ../artwork { }}/logo.png";
     categories = [ "Utility" ];
     startupWMClass = "alis-${n}";
