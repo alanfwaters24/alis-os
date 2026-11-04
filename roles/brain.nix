@@ -48,7 +48,8 @@ in
   };
 
   config = lib.mkIf isBrain (lib.mkMerge [
-    { alis.homeAssistant.enable = lib.mkDefault true; }
+    # Runs its own HA unless pointed at an existing one (alis.homeAssistant.url).
+    { alis.homeAssistant.enable = lib.mkDefault (config.alis.homeAssistant.url == null); }
 
     (lib.mkIf cfg.voice.enable {
       services.wyoming.faster-whisper.servers.alis = {

@@ -97,7 +97,9 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
-      environment = { PORT = toString a.port; } // a.environment;
+      environment = { PORT = toString a.port; }
+        // lib.optionalAttrs (config.alis.homeAssistant.url != null) { ALIS_HA_URL = config.alis.homeAssistant.url; }
+        // a.environment;
       serviceConfig = {
         ExecStartPre = lib.optional (a.src != null) "${linkSrc a}";
         ExecStart = "${pkgs.bash}/bin/bash -c ${lib.escapeShellArg "exec ${a.command}"}";

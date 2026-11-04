@@ -1,84 +1,104 @@
 # Desktop role — office PC (and the base for the laptop role).
-# A login screen, then a light ALIS-coloured desktop (sway) whose first
-# workspace is the dashboard. Terminal, browser and files on hand.
+# A full desktop (KDE Plasma) dressed as ALIS: ALIS Glass colours, wallpaper
+# and login screen, the dashboard opening as an app on login, and the usual
+# PC apps built in.
+#
+#   Files .............. Dolphin              Settings ...... System Settings
+#   Browser ............ Chromium             Themes ........ System Settings → Appearance
+#   Office ............. OnlyOffice           Storage ....... Filelight + Partition Manager
+#   Notepad ............ KWrite / Kate        Calculator .... KCalc
+#   Downloads/Archives . Ark                  App store ..... Discover (Flatpak)
+#   Photos / PDFs ...... Gwenview / Okular    Screenshots ... Spectacle
 { config, lib, pkgs, ... }:
 let
-  c = import ../artwork/colours.nix;
   isDesktop = lib.elem config.alis.role [ "desktop" "laptop" ];
+  theme = pkgs.callPackage ../artwork/kde.nix { };
   artwork = pkgs.callPackage ../artwork { };
+
+  dashboardApp = pkgs.makeDesktopItem {
+    name = "alis-dashboard";
+    desktopName = "ALIS Dashboard";
+    genericName = "ALIS home";
+    exec = "${pkgs.chromium}/bin/chromium --app=${config.alis.dashboard.url} --class=alis-dashboard";
+    icon = "${artwork}/logo.png";
+    categories = [ "Utility" ];
+    startupWMClass = "alis-dashboard";
+  };
+
+  # Runs once per user on first login: apply the ALIS look. After that the
+  # user can change anything in System Settings and it sticks.
+  firstLogin = pkgs.writeShellScript "alis-first-login" ''
+    marker="$HOME/.config/alis-theme-applied"
+    [ -e "$marker" ] && exit 0
+    sleep 3
+    plasma-apply-colorscheme ALISGlass || true
+    plasma-apply-wallpaperimage ${theme}/share/wallpapers/ALIS || true
+    plasma-apply-desktoptheme breeze-dark || true
+    mkdir -p "$(dirname "$marker")" && touch "$marker"
+  '';
 in
 {
   config = lib.mkIf isDesktop {
-    programs.sway = {
+    services.desktopManager.plasma6.enable = true;
+    services.displayManager.sddm = {
       enable = true;
-      wrapperFeatures.gtk = true;
-      extraPackages = with pkgs; [ foot fuzzel swaylock swayidle grim slurp wl-clipboard mako ];
+      wayland.enable = true;
+    };
+    services.displayManager.defaultSession = "plasma";
+
+    environment.systemPackages = (with pkgs; [
+      theme
+      dashboardApp
+      chromium
+      onlyoffice-desktopeditors
+      kdePackages.kcalc
+      kdePackages.kate
+      kdePackages.filelight
+      kdePackages.partitionmanager
+      kdePackages.ark
+      kdePackages.gwenview
+      kdePackages.okular
+      kdePackages.spectacle
+      kdePackages.discover
+      kdePackages.kdialog
+    ]) ++ [
+      (pkgs.makeAutostartItem { name = "alis-dashboard"; package = dashboardApp; })
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-first-login.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS look
+        Exec=${firstLogin}
+        X-KDE-autostart-phase=2
+        NoDisplay=true
+      '')
+    ];
+
+    # Defaults for new users (KDE reads these until the user changes them).
+    environment.etc."xdg/kdeglobals".text = ''
+      [General]
+      ColorScheme=ALISGlass
+
+      [KDE]
+      LookAndFeelPackage=org.kde.breezedark.desktop
+    '';
+
+    # Extra apps from Flathub via Discover.
+    services.flatpak.enable = true;
+    systemd.services.alis-flathub = {
+      description = "Add Flathub to the ALIS app store";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      path = [ pkgs.flatpak ];
+      script = "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo";
+      serviceConfig = { Type = "oneshot"; Restart = "on-failure"; RestartSec = 60; };
     };
 
-    environment.etc."sway/config".source = lib.mkForce (pkgs.writeText "alis-sway-config" ''
-      # ALIS OS desktop — ALIS Glass colours
-      set $mod Mod4
-      set $term foot
-      set $menu fuzzel
-
-      output * bg ${artwork}/splash.png fill
-      default_border pixel 2
-      gaps inner 10
-      font pango:DejaVu Sans 11
-
-      #                       border      bg        text     indicator  child_border
-      client.focused          ${c.teal}   ${c.bg}   ${c.text} ${c.violet} ${c.teal}
-      client.focused_inactive ${c.bg}     ${c.bg}   ${c.textDim} ${c.bg}  ${c.bg}
-      client.unfocused        ${c.bg}     ${c.bg}   ${c.textDim} ${c.bg}  ${c.bg}
-
-      input type:keyboard xkb_layout gb
-
-      # Workspace 1 = the ALIS dashboard
-      assign [app_id="^chrom"] workspace 1
-      exec ${config.alis.kiosk.command}
-
-      bindsym $mod+Return exec $term
-      bindsym $mod+d exec $menu
-      bindsym $mod+a exec ${config.alis.kiosk.command}
-      bindsym $mod+q kill
-      bindsym $mod+f fullscreen toggle
-      bindsym $mod+l exec swaylock -c ${lib.removePrefix "#" c.bg}
-      bindsym $mod+Shift+e exec swaynag -t warning -m 'Leave ALIS OS?' -B 'Log out' 'swaymsg exit'
-      bindsym $mod+Left focus left
-      bindsym $mod+Right focus right
-      bindsym $mod+Up focus up
-      bindsym $mod+Down focus down
-      ${lib.concatMapStrings (n: ''
-        bindsym $mod+${n} workspace number ${n}
-        bindsym $mod+Shift+${n} move container to workspace number ${n}
-      '') [ "1" "2" "3" "4" "5" ]}
-
-      bar {
-        position top
-        status_command while date +'%a %d %b  %H:%M'; do sleep 30; done
-        colors {
-          background ${c.bg}
-          statusline ${c.text}
-          focused_workspace  ${c.teal} ${c.teal} ${c.bg}
-          inactive_workspace ${c.bg} ${c.bg} ${c.textDim}
-        }
-      }
-
-      exec mako --background-color '${c.bg}' --border-color '${c.teal}' --text-color '${c.text}'
-      include /etc/sway/config.d/*
-    '');
-
-    # Text login screen that starts the ALIS desktop.
-    services.greetd = {
-      enable = true;
-      settings.default_session.command =
-        "${pkgs.tuigreet}/bin/tuigreet --time --remember --asterisks --greeting 'Welcome to A.L.I.S OS' --cmd sway";
-    };
-
-    environment.systemPackages = with pkgs; [ chromium firefox nautilus ];
-    fonts.packages = with pkgs; [ noto-fonts noto-fonts-color-emoji dejavu_fonts ];
+    fonts.packages = with pkgs; [ noto-fonts noto-fonts-color-emoji dejavu_fonts liberation_ttf ];
     hardware.graphics.enable = true;
     services.pipewire = { enable = true; pulse.enable = true; };
-    security.polkit.enable = true;
+    services.printing.enable = true;
+    hardware.bluetooth.enable = true;
+    xdg.portal.enable = true;
   };
 }

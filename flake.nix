@@ -43,11 +43,15 @@
       nixosConfigurations = {
         # Stage 1: live test image — boots straight into the ALIS dashboard.
         alis-live-test = mkAlis [ ./hosts/live-test.nix ];
+        # Same, for the desktop role (KDE Plasma, ALIS-themed).
+        alis-desktop-test = mkAlis [ ./hosts/live-desktop.nix ];
       };
 
       packages.${system} = {
         # Bootable USB/DVD image:   nix build .#iso
         iso = self.nixosConfigurations.alis-live-test.config.system.build.isoImage;
+        # Desktop-role live image:   nix build .#iso-desktop
+        iso-desktop = self.nixosConfigurations.alis-desktop-test.config.system.build.isoImage;
         # Quick virtual-machine test:   nix run .#vm
         vm = self.nixosConfigurations.alis-live-test.config.system.build.vm;
         # The ALIS logo / boot splash on its own (handy for checking artwork).
@@ -68,6 +72,15 @@
       // {
         # Boots a Brain in a VM and checks each service answers.
         brain-boot = import ./tests/brain.nix { inherit pkgs alisModule; };
+        # A Brain that uses an existing Home Assistant instead of its own.
+        brain-existing-ha = (mkAlis [{
+          alis.role = "brain";
+          alis.homeAssistant.url = "http://192.168.1.251:8123";
+          networking.hostName = "alis-example-brain-ha";
+          fileSystems."/" = { device = "/dev/disk/by-label/nixos"; fsType = "ext4"; };
+          boot.loader.systemd-boot.enable = true;
+          system.stateVersion = "26.05";
+        }]).config.system.build.toplevel;
       };
     };
 }
