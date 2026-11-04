@@ -74,32 +74,35 @@ alis.nas.shares = {
 - If VAULT is off, nothing hangs: the drive just doesn't open (10-second timeout).
 - `stash` is linked by default. Away from home, set `alis.nas.host` to VAULT's Tailscale name.
 
-## Using your existing Brain
+## Every ALIS module: built in, or link to the one you have
 
-Any ALIS OS machine can use the Brain you already have instead of running
-its own. Set the pieces you have; the matching built-in pieces switch off:
-
-```nix
-alis.brain.url       = "http://192.168.1.235:8080";   # NEST + shared brain → screens show this
-alis.brain.voiceHost = "192.168.1.251";               # Whisper / Piper / openWakeWord
-alis.brain.ollamaUrl = "http://192.168.1.251:11434";
-alis.brain.pushUrl   = "http://192.168.1.235:8091";
-alis.homeAssistant.url = "http://192.168.1.251:8123";
-```
-
-The addresses are written to `/etc/alis/connect.json` and given to every ALIS
-module as `ALIS_BRAIN_URL`, `ALIS_VOICE_HOST`, `ALIS_OLLAMA_URL`,
-`ALIS_PUSH_URL` and `ALIS_HA_URL`.
-
-## Using your existing Home Assistant
+Every module in the ALIS blueprint (`modules/registry.nix`, copied from
+`alis-core/ports_and_env.json`) has one switch:
 
 ```nix
-alis.homeAssistant.url = "http://192.168.1.251:8123";
+alis.modules.glance.mode = "builtin";   # run it on this machine
+alis.modules.fuel.mode   = "link";      # use the existing one — address pre-filled from the blueprint
+alis.modules.fuel.url    = "http://192.168.1.240:3501";   # ...or give a different address
+alis.modules.arcade.mode = "off";
 ```
 
-The Brain then doesn't run its own Home Assistant, and every ALIS module is
-given the address as `ALIS_HA_URL` (also in `/etc/alis/ha-url` and `/etc/alis/connect.json`). NEST reads
-`ha_url` from its own `config.json`, which already defaults to that address.
+| Machine | Default |
+|---|---|
+| Brain | Runs everything ALIS OS can build in (NEST, alis-push, GLANCE, Home Assistant, voice, Ollama); links every other live module |
+| PC / laptop / kiosk | Links every module that's live today; nothing heavy runs locally |
+| Server | Everything off; switch on what you want |
+
+- On PCs and laptops, every module that's on and has a web page gets its own
+  app in the start menu ("ALIS · SCORE", "ALIS · NOVA"...).
+- Laptops use Tailscale addresses (work away from home); others use home-network
+  addresses. Change with `alis.network = "lan"` or `"tailscale"`.
+- Every module's address is in `/etc/alis/connect.json` and given to every ALIS
+  app as `ALIS_<NAME>_URL` (e.g. `ALIS_HOMEASSISTANT_URL`).
+- NEST (alis-live) reads `ha_url` from its own `config.json`, which already
+  defaults to your Home Assistant at 192.168.1.251.
+- **Can be built in today:** NEST, alis-push, GLANCE, Home Assistant, voice,
+  Ollama. Everything else links. Asking to build in one that isn't ready
+  stops the build with a plain message. Adding a recipe moves a module over.
 
 ## The Brain role
 
@@ -113,12 +116,13 @@ over the Brain VM and dev-automation today, on one box. Ports match
 | Whisper — speech → text | 10300 (Wyoming) | NixOS |
 | Piper — text → speech | 10200 (Wyoming) | NixOS, voice `en_GB-southern_english_female-low` |
 | openWakeWord — "Hey ALIS" | 10400 (Wyoming) | NixOS |
-| Ollama — local AI | 11434 | NixOS (no models downloaded unless listed in `alis.brain.ollama.models`) |
+| Ollama — local AI | 11434 | NixOS (no models downloaded unless listed in `alis.brain.ollamaModels`) |
 | NEST + shared brain (`/api/brain`) | 8080 / 8443 | `alis-live` repo |
 | alis-push | 8091 · TS 10001 | `alis-push` repo |
 | GLANCE | 3512 · TS 10006 | `glance` repo |
 
-Switch any piece off on its own, e.g. `alis.brain.ollama.enable = false;`.
+Already have one of these? Link to it instead, e.g.
+`alis.modules.homeassistant.mode = "link";` uses your Home Assistant at 192.168.1.251.
 
 **Per-machine settings never come from git.** Each module's `config.json`,
 `.env`, `data/` and certificates live only in `/var/lib/alis/<module>/` on
@@ -154,7 +158,9 @@ modules/             what ALIS adds to Linux
   branding.nix       "ALIS OS" name, boot splash, console colours
   dashboard.nix      bundled ALIS dashboard served on localhost:8080
   apps.nix           shared ALIS module service template + port-clash check
-  home-assistant.nix Home Assistant + Matter (copied over from alis-os-home), or use an existing one
+  registry.nix       every ALIS module: ports, hosts, Tailscale ports
+  modules.nix        builtin / link / off switch per module, start-menu apps
+  home-assistant.nix Home Assistant + Matter recipe (copied over from alis-os-home)
   nas.nix            NAS shares: mounted drives + file-explorer links
 roles/               kiosk / desktop / laptop / server / brain
 tests/brain.nix      boots a Brain in a VM and checks every service answers
