@@ -167,6 +167,13 @@ if "${NIX[@]}" path-info "$system" >/dev/null 2>&1; then
   "${NIX[@]}" copy --no-check-sigs --to "local?root=/mnt" "$system"
 else
   [ "$ONLINE" = 1 ] || die "This machine's software isn't on the USB and there's no internet. Connect to the internet and run alis-install again."
+  # The recipe's own sources (this repo + nixpkgs + ALIS repos, each pinned by
+  # hash in flake.lock) are on the USB but unsigned, so copy exactly those onto
+  # the disk first. Everything else is downloaded and signature-checked as normal.
+  mapfile -t srcs < <("${NIX[@]}" flake archive --dry-run --json "path:$work" 2>/dev/null \
+    | grep -o '/nix/store/[a-z0-9]*-source' | sort -u)
+  [ "${#srcs[@]}" -gt 0 ] || die "Couldn't read the ALIS OS recipe's sources."
+  "${NIX[@]}" copy --no-check-sigs --to "local?root=/mnt" "${srcs[@]}"
   # Build into the new disk (not the USB's memory), downloading what's needed
   # and reusing anything already on the USB.
   "${NIX[@]}" build --eval-store auto --store /mnt --no-link --extra-substituters "auto?trusted=1" "$target" \
