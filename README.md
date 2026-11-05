@@ -247,4 +247,9 @@ run the current installer on it.
 - [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
 - [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
 - [ ] **Stage 4:** auto-updates from this repo + nightly backup to VAULT built in
-- [ ] **Later:** ALIS Glass fonts (Exo 2 / Rajdhani / Share Tech Mono) packaged locally, graphical ALIS greeter, Plymouth theme with the rotating ring
+- [ ] **Stage 5: ALIS Glass theme pack:** every PC/laptop gets it automatically; switch it off in System Settings like any other theme. Built one piece at a time:
+  - [ ] **5a Fonts:** Exo 2 / Rajdhani / Share Tech Mono packaged and used system-wide (everything else builds on this)
+  - [ ] **5b Chromium:** ALIS colours on the frame and tabs, ALIS dashboard as the new-tab page (set by ALIS OS policy)
+  - [ ] **5c Music player (Elisa) + other KDE apps:** Kvantum "glass" theme (see-through panels), ALIS window frame with the rotating teal-violet edge, ALIS icons and cursor
+  - [ ] **5d Desktop:** ALIS taskbar/start-menu theme, graphical ALIS login screen, lock screen, Plymouth boot splash with the animated rotating ring
+  - [ ] **5e Apps that draw their own look** (OnlyOffice, Steam, games): ALIS dark mode + accent colours where the app allows it. Full skinning isn't possible for these.
