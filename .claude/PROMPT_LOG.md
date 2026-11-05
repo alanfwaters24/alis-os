@@ -61,3 +61,15 @@
 **Bugs found by the test and fixed:** floppy drive listed as a disk; ✓ not in console font; install tried to rebuild everything because swapped-in sources lost version info (fixed with flake.lock); installer didn't reuse the USB's software (now copies it directly when present).
 
 **Still to do:** office PC "use Ubuntu's partition" mode (Stage 2b); a real-hardware run on the spare laptop (needs internet; downloads the KDE desktop).
+
+## 2026-11-05 (cont.) — First real install: HP 15-db0 laptop
+
+**Hardware:** HP Laptop 15-db0xxx, AMD A6-9225, 4 GB RAM (one slot only — JDIMM2 not fitted), Crucial BX500 500 GB SSD, previously ChromeOS Flex. (HP 240 G7 rejected: blink code 5.3, main board fault.) zram added to the laptop role for 4 GB machines.
+
+**Problems hit on real hardware, all fixed in the repo:**
+1. USB written in Rufus ISO mode → boot timed out waiting for /dev/disk/by-label/ALIS_OS_INSTALL (FAT labels max 11 chars). Labels now ALIS_INST / ALIS_DESK; README says Etcher or Rufus DD mode.
+2. "No disks found": DD-mode stick mounts /iso from the whole disk, `lsblk -no PKNAME` returned a multi-line value that excluded every disk. Now `lsblk -ndo PKNAME` with fallback.
+3. "lacks a signature by a trusted key" for the USB's nixpkgs source. A blanket require-sigs=false was blocked (rightly); instead the flake + its 5 pinned inputs are copied with --no-check-sigs, downloads stay signature-checked.
+4. Desktop up, but nothing connected: laptops defaulted to Tailscale addresses and the laptop wasn't on Tailscale. New `alis.network = "auto"` (laptop default): home address first, Tailscale fallback, dashboard last falls back to the built-in copy (`pkgs/alis-open-url.nix`, tested with down/up/both-down cases).
+
+**Result:** ALIS OS desktop running on the HP (photo confirmed: wallpaper, start menu, taskbar).

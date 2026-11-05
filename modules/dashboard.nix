@@ -2,24 +2,23 @@
 # python3 http.server setup as alis-dashboard/install.sh, but managed by NixOS.
 #
 # Screens open the dashboard through `alis-open-dashboard`: it tries the
-# live NEST first and, if that doesn't answer within a few seconds (VAULT/
-# dev-automation down, laptop away from home), opens the built-in copy
-# instead — so there's never a blank window.
+# live NEST first, then (laptops) NEST over Tailscale, and if neither answers
+# within a few seconds opens the built-in copy — so there's never a blank window.
 { config, lib, pkgs, ... }:
 let
   cfg = config.alis.dashboard;
   localUrl = "http://localhost:${toString cfg.port}";
 
+  nest = config.alis.modules.nest;
+  # Live NEST → its Tailscale address (laptops away from home) → built-in copy.
+  candidates = lib.unique ([ cfg.url ]
+    ++ lib.optional (cfg.url == nest.effectiveUrl && nest.fallbackUrl != null) nest.fallbackUrl
+    ++ lib.optional cfg.serveLocally localUrl);
+  openUrl = pkgs.callPackage ../pkgs/alis-open-url.nix { };
+
   # alis-open-dashboard [extra chromium flags...]
   openDashboard = pkgs.writeShellScriptBin "alis-open-dashboard" ''
-    url=${lib.escapeShellArg cfg.url}
-    ${lib.optionalString (cfg.url != localUrl && cfg.serveLocally) ''
-      if ! ${pkgs.curl}/bin/curl -sk -o /dev/null --max-time ${toString cfg.fallbackAfter} "$url"; then
-        echo "alis-open-dashboard: $url not answering, using the built-in copy" >&2
-        url=${localUrl}
-      fi
-    ''}
-    exec ${pkgs.chromium}/bin/chromium --app="$url" --password-store=basic "$@"
+    exec ${openUrl}/bin/alis-open-url --wait ${toString cfg.fallbackAfter} ${lib.escapeShellArgs candidates} -- "$@"
   '';
 in
 {
@@ -54,6 +53,7 @@ in
       description = "Seconds to wait for the live NEST before showing the built-in copy.";
     };
     localUrl = lib.mkOption { type = lib.types.str; default = localUrl; readOnly = true; };
+    allUrls = lib.mkOption { type = lib.types.listOf lib.types.str; default = candidates; readOnly = true; description = "Every address the dashboard may open, in order."; };
     openCommand = lib.mkOption {
       type = lib.types.package;
       default = openDashboard;

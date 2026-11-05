@@ -37,7 +37,7 @@ in
     (lib.mkIf (!(lib.elem config.alis.role [ "server" "brain" ])) {
       programs.chromium = {
         enable = true;
-        extraOpts.AudioCaptureAllowedUrls = lib.unique [ config.alis.dashboard.url config.alis.dashboard.localUrl ];
+        extraOpts.AudioCaptureAllowedUrls = config.alis.dashboard.allUrls;
       };
     })
 

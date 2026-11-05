@@ -12,24 +12,27 @@
 #
 # Every module that's on is written to /etc/alis/connect.json and given to
 # every ALIS app as ALIS_<NAME>_URL. On PCs/laptops each one with a web page
-# also gets an app in the start menu.
+# also gets an app in the start menu. Laptops ("auto" network) try the home
+# address first and Tailscale when away.
 { config, lib, pkgs, ... }:
 let
   registry = import ./registry.nix;
   cfg = config.alis.modules;
   role = config.alis.role;
-  useTailscale = config.alis.network == "tailscale";
+  network = config.alis.network;
+  openUrl = pkgs.callPackage ../pkgs/alis-open-url.nix { };
 
-  defaultUrl = name: r:
-    let
-      scheme = r.scheme or "http";
-      lan = if r.port != null then "${scheme}://${r.host.lan}:${toString r.port}" else null;
-      ts =
-        if r.host.ts == null || r.tsPort == null then null
-        else if r.tsPort == 443 then "https://${r.host.ts}"
-        else "https://${r.host.ts}:${toString r.tsPort}";
-    in
-    if useTailscale then (if ts != null then ts else lan)
+  lanUrl = r: if r.port != null then "${r.scheme or "http"}://${r.host.lan}:${toString r.port}" else null;
+  tsUrl = r:
+    if r.host.ts == null || r.tsPort == null then null
+    else if r.tsPort == 443 then "https://${r.host.ts}"
+    else "https://${r.host.ts}:${toString r.tsPort}";
+
+  # "tailscale": Tailscale first. "lan" and "auto": home network first
+  # ("auto" then falls back to Tailscale, see fallbackUrl).
+  defaultUrl = r:
+    let lan = lanUrl r; ts = tsUrl r; in
+    if network == "tailscale" then (if ts != null then ts else lan)
     else (if lan != null then lan else ts);
 
   builtinUrl = r: "${r.scheme or "http"}://127.0.0.1:${toString r.port}";
@@ -46,7 +49,7 @@ let
     name = "alis-${n}";
     desktopName = "ALIS · ${m.title}";
     comment = m.about;
-    exec = "${pkgs.chromium}/bin/chromium --app=${m.effectiveUrl} --class=alis-${n} --password-store=basic";
+    exec = "${openUrl}/bin/alis-open-url ${m.effectiveUrl} ${lib.optionalString (m.fallbackUrl != null) m.fallbackUrl} -- --class=alis-${n}";
     icon = "${pkgs.callPackage ../artwork { }}/logo.png";
     categories = [ "Utility" ];
     startupWMClass = "alis-${n}";
@@ -54,9 +57,13 @@ let
 in
 {
   options.alis.network = lib.mkOption {
-    type = lib.types.enum [ "lan" "tailscale" ];
-    default = if role == "laptop" then "tailscale" else "lan";
-    description = "How linked modules are reached: home network addresses, or Tailscale (works away from home).";
+    type = lib.types.enum [ "lan" "tailscale" "auto" ];
+    default = if role == "laptop" then "auto" else "lan";
+    description = ''
+      How linked modules are reached: "lan" (home network), "tailscale"
+      (works anywhere, needs `tailscale up` once), or "auto" (home network
+      first, Tailscale when that doesn't answer — the laptop default).
+    '';
   };
 
   options.alis.modules = lib.mapAttrs (n: r: {
@@ -67,7 +74,7 @@ in
     };
     url = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
-      default = defaultUrl n r;
+      default = defaultUrl r;
       description = "Address of the existing ${r.title} (for link mode).";
     };
     effectiveUrl = lib.mkOption {
@@ -75,6 +82,14 @@ in
       readOnly = true;
       default = if cfg.${n}.mode == "builtin" then builtinUrl r else cfg.${n}.url;
       description = "Where this machine finds ${r.title}.";
+    };
+    fallbackUrl = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      readOnly = true;
+      default =
+        let m = cfg.${n}; ts = tsUrl r; in
+        if network == "auto" && m.mode == "link" && m.url == lanUrl r && ts != null && ts != m.url then ts else null;
+      description = "Second address tried when the first doesn't answer (auto network mode).";
     };
     title = lib.mkOption { type = lib.types.str; default = r.title; readOnly = true; };
     about = lib.mkOption { type = lib.types.str; default = r.about; readOnly = true; };
@@ -93,10 +108,10 @@ in
       }) cfg;
 
     environment.etc."alis/connect.json".text =
-      builtins.toJSON (lib.mapAttrs (_: m: { inherit (m) mode; url = m.effectiveUrl; }) on);
+      builtins.toJSON (lib.mapAttrs (_: m: { inherit (m) mode; url = m.effectiveUrl; } // lib.optionalAttrs (m.fallbackUrl != null) { fallback = m.fallbackUrl; }) on);
     environment.variables = lib.mapAttrs' (n: m: lib.nameValuePair (envName n) m.effectiveUrl) on;
     alis.appsEnvironment = lib.mapAttrs' (n: m: lib.nameValuePair (envName n) m.effectiveUrl) on;
 
-    environment.systemPackages = lib.optionals (lib.elem role [ "desktop" "laptop" ]) launchers;
+    environment.systemPackages = lib.optionals (lib.elem role [ "desktop" "laptop" ]) (launchers ++ [ openUrl ]);
   };
 }

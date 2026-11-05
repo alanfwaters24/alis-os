@@ -94,8 +94,10 @@ alis.modules.arcade.mode = "off";
 
 - On PCs and laptops, every module that's on and has a web page gets its own
   app in the start menu ("ALIS · SCORE", "ALIS · NOVA"...).
-- Laptops use Tailscale addresses (work away from home); others use home-network
-  addresses. Change with `alis.network = "lan"` or `"tailscale"`.
+- Laptops (`alis.network = "auto"`) try the home-network address first and
+  Tailscale when that doesn't answer, so they work at home straight after
+  install and away from home once `sudo tailscale up` has been run once.
+  Others use home-network addresses. Set `"lan"` or `"tailscale"` to force one.
 - Every module's address is in `/etc/alis/connect.json` and given to every ALIS
   app as `ALIS_<NAME>_URL` (e.g. `ALIS_HOMEASSISTANT_URL`).
 - **Dashboard fallback:** PCs, laptops and kiosks open the live NEST, but if it
