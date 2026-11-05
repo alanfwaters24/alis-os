@@ -2,21 +2,21 @@
   description = "ALIS OS — the ALIS ecosystem as a Linux distribution (built on NixOS)";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-26.05";
+    nixpkgs.url = "https://channels.nixos.org/nixos-26.05/nixexprs.tar.xz";
 
     # The ALIS dashboard gets baked into the image so every machine has it,
     # even with no network. Private repo — see README "Building" for the
     # one-line GitHub token setup.
     alis-dashboard = {
-      url = "github:alanfwaters24/alis-dashboard";
+      url = "git+https://github.com/alanfwaters24/alis-dashboard";
       flake = false;
     };
 
     # Brain-role modules (private repos, code only — no secrets: each app's
     # config.json / .env / data stay on the machine, see modules/apps.nix).
-    alis-live = { url = "github:alanfwaters24/alis-live"; flake = false; };
-    alis-push = { url = "github:alanfwaters24/alis-push"; flake = false; };
-    glance = { url = "github:alanfwaters24/glance"; flake = false; };
+    alis-live = { url = "git+https://github.com/alanfwaters24/alis-live"; flake = false; };
+    alis-push = { url = "git+https://github.com/alanfwaters24/alis-push"; flake = false; };
+    glance = { url = "git+https://github.com/alanfwaters24/glance"; flake = false; };
   };
 
   outputs = { self, nixpkgs, alis-dashboard, alis-live, alis-push, glance }:

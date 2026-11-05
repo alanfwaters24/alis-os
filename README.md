@@ -177,12 +177,16 @@ artwork/             logo + splash, drawn from the ALIS Glass palette
 
 ## Building
 
-The ALIS module repos (dashboard, alis-live, alis-push, glance) are private, so Nix needs your GitHub login once:
+The ALIS module repos (dashboard, alis-live, alis-push, glance) are private.
+Nix fetches them with git, so git needs your GitHub login once:
 
 ```bash
-mkdir -p ~/.config/nix
-echo "access-tokens = github.com=$(gh auth token)" >> ~/.config/nix/nix.conf
+gh auth login && gh auth setup-git
 ```
+
+`flake.lock` pins the exact version of every source (nixpkgs and each ALIS
+repo). To move everything to the latest versions: `nix flake update`, then
+rebuild. To take just one module's latest code: `nix flake update glance`.
 
 Then, on any Linux machine with Nix (dev-automation works):
 

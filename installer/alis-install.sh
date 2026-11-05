@@ -11,7 +11,6 @@
 set -euo pipefail
 
 FLAKE_SRC=/etc/alis-os            # this repo, as it was when the USB was built
-INPUTS=/etc/alis-os-inputs        # nixpkgs + ALIS module repos, baked into the USB
 NIX=(nix --extra-experimental-features "nix-command flakes")
 
 teal=$'\e[38;2;45;212;191m'; violet=$'\e[38;2;167;139;250m'; dim=$'\e[38;2;138;154;150m'
@@ -151,13 +150,13 @@ if [ "${ALIS_SKIP_HWCONF:-0}" != 1 ]; then
 fi
 
 say "  • Building ALIS OS for $ALIS_MACHINE (downloads ~2–6 GB)"
-overrides=()
-for d in "$INPUTS"/*; do overrides+=(--override-input "$(basename "$d")" "path:$(readlink -f "$d")"); done
 # Use software already on this USB first ("auto"), then the internet.
 subs=(--extra-substituters "auto?trusted=1")
 [ "$ONLINE" = 1 ] || subs=(--option substituters "auto?trusted=1")
-system=$("${NIX[@]}" build --store /mnt --no-link --print-out-paths "${subs[@]}" \
-  "path:$work#nixosConfigurations.$ALIS_MACHINE.config.system.build.toplevel" "${overrides[@]}" 2> >(grep -v '^warning' >&2))
+# flake.lock pins every source; the USB already holds those exact versions,
+# so working out the system needs no internet. The result is built into /mnt.
+system=$("${NIX[@]}" build --eval-store auto --store /mnt --no-link --print-out-paths "${subs[@]}" \
+  "path:$work#nixosConfigurations.$ALIS_MACHINE.config.system.build.toplevel" 2> >(grep -v '^warning' >&2))
 
 say "  • Installing"
 nixos-install --root /mnt --system "$system" --no-root-passwd --no-channel-copy >/dev/null

@@ -1,0 +1,92 @@
+{
+  "nodes": {
+    "alis-dashboard": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791816162,
+        "narHash": "sha256-RFzuBo4fIOlY27u7XzYhq0ZnDm3HIcRHgP4NOougEqw=",
+        "ref": "refs/heads/main",
+        "rev": "c2c7b73467e667268990c028d665ef4253621bbf",
+        "revCount": 1,
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/alis-dashboard"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/alis-dashboard"
+      }
+    },
+    "alis-live": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793545051,
+        "narHash": "sha256-xSPkSizhxdrJ0QRyuB/I8sptJfsVnNVZjDp8B7pGvcQ=",
+        "ref": "refs/heads/main",
+        "rev": "f0b0b6a3e79c8b0c300137eefe3b3ba857bc7eea",
+        "revCount": 30,
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/alis-live"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/alis-live"
+      }
+    },
+    "alis-push": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793317075,
+        "narHash": "sha256-RgGXj1NSHIoCzIUylg51CJB5ssc6ChNZ3HneGVYuZJI=",
+        "ref": "refs/heads/main",
+        "rev": "4cb71a704e4b81734e36e4654e75b1af8ae2dca7",
+        "revCount": 5,
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/alis-push"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/alis-push"
+      }
+    },
+    "glance": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793318367,
+        "narHash": "sha256-mLCEOM4f6hrBtGw39gozLrYCYdV5P670l+hlbfNKyJ4=",
+        "ref": "refs/heads/main",
+        "rev": "b1f3efef004892483851484a9827ba9d6beca06e",
+        "revCount": 17,
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/glance"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/alanfwaters24/glance"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1793633738,
+        "narHash": "sha256-dKEjuquCf1NEYiTZZr6xrvTrkhAm5Q94JuEwLBzycEs=",
+        "rev": "7dcdd87373d72e7a2173e4db02e20d3d7f495cfd",
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.13446.7dcdd87373d7/nixexprs.tar.xz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://channels.nixos.org/nixos-26.05/nixexprs.tar.xz"
+      }
+    },
+    "root": {
+      "inputs": {
+        "alis-dashboard": "alis-dashboard",
+        "alis-live": "alis-live",
+        "alis-push": "alis-push",
+        "glance": "glance",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

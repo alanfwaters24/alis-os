@@ -29,12 +29,12 @@ in
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   environment.systemPackages = [ alis-install pkgs.git ];
-  environment.etc = { "alis-os".source = alisFlake; }
-    // lib.mapAttrs' (n: p: lib.nameValuePair "alis-os-inputs/${n}" { source = p.outPath; }) alisInputs;
+  environment.etc."alis-os".source = alisFlake;
 
   # Software already on the USB (lets the VM test install with no internet).
   isoImage.storeContents = preinstalled;
-  # Keep the inputs' sources on the USB so the recipe can be read offline.
+  # The exact source versions flake.lock pins, kept on the USB so the
+  # recipe can be worked out with no internet.
   system.extraDependencies = map (p: p.outPath) (lib.attrValues alisInputs);
 
   # Start the installer on the first screen.
