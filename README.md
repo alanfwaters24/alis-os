@@ -23,7 +23,7 @@ your own OS around it.
 |---|---|---|
 | `kiosk` | Wall / fridge tablets | Powers on → dashboard full-screen. No login, can't be closed (restarts itself). |
 | `desktop` | Office PC | A full PC desktop (KDE Plasma) dressed as ALIS — see below. |
-| `laptop` | Spare/old laptops | Desktop + battery modes, suspend on lid close, firmware updates. |
+| `laptop` | Spare/old laptops | Desktop + battery modes, suspend on lid close, firmware updates, compressed memory (zram) so 4 GB goes further. |
 | `server` | Mini PC / VMs | No screen. Runs ALIS modules (`alis.apps.*`) and optionally Home Assistant. |
 | `brain` | The ALIS Brain (mini PC) | A server with the whole Brain stack on — see below. |
 
