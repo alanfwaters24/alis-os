@@ -87,7 +87,15 @@ say "  [ok] ${bold}$ALIS_MACHINE${off}"
 
 # ---- 3. Which disk ---------------------------------------------------------
 step "3/6  Which disk should ALIS OS go on?"
-usb=$(lsblk -no PKNAME "$(findmnt -no SOURCE /iso 2>/dev/null || echo none)" 2>/dev/null || true)
+# Which disk is the USB stick we started from? A stick written in "DD mode"
+# holds the installer on the whole disk (/dev/sdb), a CD on /dev/sr0, others
+# on a partition (/dev/sdb1) — so take the parent disk if there is one.
+usb=""
+src=$(findmnt -no SOURCE /iso 2>/dev/null || true)
+if [ -b "$src" ]; then
+  usb=$(lsblk -ndo PKNAME "$src" 2>/dev/null || true)
+  [ -n "$usb" ] || usb=$(basename "$src")
+fi
 # Real disks only: no USB stick we booted from, no floppy/CD/RAM disks, nothing under 8 GB.
 mapfile -t disks < <(lsblk -dpnbo NAME,TYPE,SIZE | awk '$2=="disk" && $3>=8000000000 {print $1}' \
   | grep -v -e "^/dev/${usb:-none}\$" -e '^/dev/fd' -e '^/dev/loop' -e '^/dev/sr' -e '^/dev/zram' || true)
