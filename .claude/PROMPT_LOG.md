@@ -46,3 +46,18 @@
 - ALIS Brain is `brain.py` inside alis-live (`/api/brain` on 8080/8443), not a separate service on 8085 — the 8085 "uncertain" entry looks stale.
 - `alis-live/config.json` (with the HA long-lived token) is committed to the alis-live repo. Recommend removing it from git and rotating the token. Not changed, per "don't overwrite anything current".
 - ports_and_env.json now calls alis_speak "ALIS Speak (text-to-speech server)", while ALIS-CORE.md still says "unregistered".
+
+## 2026-11-05 — Dashboard fallback + Stage 2 installer
+
+**Asked:** fall back to the built-in dashboard when NEST is unreachable; then build the installer (first target a spare laptop; office PC later = replace Ubuntu, keep Windows; guided ALIS script rather than a graphical wizard).
+
+**Done:**
+- `alis-open-dashboard`: tries live NEST for 4 s, else opens the built-in copy (kiosk + desktop). Tested both paths.
+- `machines/<name>/` folders become machines automatically; `modules/machine.nix` = standard by-label disk layout.
+- `installer/alis-install.sh` + `hosts/installer.nix` (installer USB, auto-starts on screen 1).
+- `flake.lock` now committed: nixpkgs via the official channel URL, ALIS repos via git+https (git uses the normal GitHub login).
+- **Full VM test passed:** UEFI VM → installer → picked vm-test + the 20 GB disk → ERASE → installed offline from the USB → rebooted with no USB → "Welcome to ALIS OS", logged in as alan, /etc/alis-os present, `systemctl is-system-running` = running.
+
+**Bugs found by the test and fixed:** floppy drive listed as a disk; ✓ not in console font; install tried to rebuild everything because swapped-in sources lost version info (fixed with flake.lock); installer didn't reuse the USB's software (now copies it directly when present).
+
+**Still to do:** office PC "use Ubuntu's partition" mode (Stage 2b); a real-hardware run on the spare laptop (needs internet; downloads the KDE desktop).

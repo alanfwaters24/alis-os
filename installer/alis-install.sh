@@ -166,7 +166,10 @@ else
 fi
 
 say "  • Installing"
-nixos-install --root /mnt --system "$system" --no-root-passwd --no-channel-copy >/dev/null
+if ! nixos-install --root /mnt --system "$system" --no-root-passwd --no-channel-copy >/tmp/alis-install.log 2>&1; then
+  tail -20 /tmp/alis-install.log
+  die "Installing failed (full log: /tmp/alis-install.log)."
+fi
 
 # ---- 6. Password -----------------------------------------------------------
 step "6/6  Password for alan"
