@@ -19,7 +19,7 @@ in
 
   image.baseName = lib.mkForce "alis-os-desktop-test";
   isoImage = {
-    volumeID = "ALIS_OS_DESKTOP";
+    volumeID = "ALIS_DESK"; # ≤11 chars (see installer.nix)
     makeEfiBootable = true;
     makeUsbBootable = true;
     splashImage = "${artwork}/splash-640x480.png";

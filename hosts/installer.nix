@@ -48,7 +48,7 @@ in
 
   image.baseName = lib.mkForce "alis-os-installer";
   isoImage = {
-    volumeID = "ALIS_OS_INSTALL";
+    volumeID = "ALIS_INST"; # ≤11 chars: Rufus "ISO mode" cuts longer names and the USB then fails to start
     splashImage = "${artwork}/splash-640x480.png";
     efiSplashImage = "${artwork}/splash.png";
     prependToMenuLabel = "A.L.I.S OS installer ";

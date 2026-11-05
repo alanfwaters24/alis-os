@@ -214,8 +214,10 @@ another network those will show as offline. That's expected.
 
 1. **Make the installer USB** (on dev-automation or any Linux box with Nix):
    `nix build .#installer` → `result/iso/alis-os-installer.iso` (~1.6 GB).
-   Write it to a USB stick with Balena Etcher or Rufus.
-2. **Boot the machine from the USB.** It must be in UEFI mode (all PCs from
+   Write it to a USB stick with **Balena Etcher**, or **Rufus in "DD Image mode"**
+   (if Rufus asks "ISO or DD?", pick DD).
+2. **Boot the machine from the USB.** On HP: turn **Secure Boot off** first
+   (F10 → Boot Options), then tap **F9** at power-on and pick the USB. It must be in UEFI mode (all PCs from
    the last ~10 years; turn off "Legacy/CSM" in the firmware if it complains).
 3. The **ALIS installer starts by itself** and asks, in plain English:
    - Wi-Fi, if there's no cable plugged in
