@@ -150,13 +150,20 @@ if [ "${ALIS_SKIP_HWCONF:-0}" != 1 ]; then
 fi
 
 say "  • Building ALIS OS for $ALIS_MACHINE (downloads ~2–6 GB)"
-# Use software already on this USB first ("auto"), then the internet.
-subs=(--extra-substituters "auto?trusted=1")
-[ "$ONLINE" = 1 ] || subs=(--option substituters "auto?trusted=1")
-# flake.lock pins every source; the USB already holds those exact versions,
-# so working out the system needs no internet. The result is built into /mnt.
-system=$("${NIX[@]}" build --eval-store auto --store /mnt --no-link --print-out-paths "${subs[@]}" \
-  "path:$work#nixosConfigurations.$ALIS_MACHINE.config.system.build.toplevel" 2> >(grep -v '^warning' >&2))
+# flake.lock pins every source and the USB holds those exact versions, so
+# working out which system this machine needs works with no internet.
+target="path:$work#nixosConfigurations.$ALIS_MACHINE.config.system.build.toplevel"
+system=$("${NIX[@]}" eval --raw "$target.outPath" 2> >(grep -v '^warning' >&2))
+if "${NIX[@]}" path-info "$system" >/dev/null 2>&1; then
+  # Already on this USB: copy it straight onto the disk.
+  "${NIX[@]}" copy --no-check-sigs --to "local?root=/mnt" "$system"
+else
+  [ "$ONLINE" = 1 ] || die "This machine's software isn't on the USB and there's no internet. Connect to the internet and run alis-install again."
+  # Build into the new disk (not the USB's memory), downloading what's needed
+  # and reusing anything already on the USB.
+  "${NIX[@]}" build --eval-store auto --store /mnt --no-link --extra-substituters "auto?trusted=1" "$target" \
+    2> >(grep -v '^warning' >&2)
+fi
 
 say "  • Installing"
 nixos-install --root /mnt --system "$system" --no-root-passwd --no-channel-copy >/dev/null
