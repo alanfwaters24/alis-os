@@ -35,12 +35,27 @@
         inherit system;
         modules = [ alisModule ] ++ extraModules;
       };
+
+      # Real machines: one folder each in machines/ (see machines/README.md).
+      machineConfigs = nixpkgs.lib.mapAttrs
+        (name: _: mkAlis [ ./modules/machine.nix ./machines/${name} ])
+        (nixpkgs.lib.filterAttrs (_: t: t == "directory") (builtins.readDir ./machines));
+
+      installer = preinstalled: nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {
+          alisFlake = self.outPath;
+          alisInputs = { inherit nixpkgs alis-dashboard alis-live alis-push glance; };
+          inherit preinstalled;
+        };
+        modules = [ ./hosts/installer.nix ];
+      };
     in
     {
       # Other repos (e.g. alis-os-home) can import this to become ALIS machines.
       nixosModules.default = alisModule;
 
-      nixosConfigurations = {
+      nixosConfigurations = machineConfigs // {
         # Stage 1: live test image — boots straight into the ALIS dashboard.
         alis-live-test = mkAlis [ ./hosts/live-test.nix ];
         # Same, for the desktop role (KDE Plasma, ALIS-themed).
@@ -50,6 +65,12 @@
       packages.${system} = {
         # Bootable USB/DVD image:   nix build .#iso
         iso = self.nixosConfigurations.alis-live-test.config.system.build.isoImage;
+        # The ALIS OS installer USB:   nix build .#installer
+        installer = (installer [ ]).config.system.build.isoImage;
+        # Installer with the vm-test machine already on it (offline VM test).
+        installer-vmtest = (installer [
+          self.nixosConfigurations.vm-test.config.system.build.toplevel
+        ]).config.system.build.isoImage;
         # Desktop-role live image:   nix build .#iso-desktop
         iso-desktop = self.nixosConfigurations.alis-desktop-test.config.system.build.isoImage;
         # Quick virtual-machine test:   nix run .#vm

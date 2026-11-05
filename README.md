@@ -169,6 +169,9 @@ modules/             what ALIS adds to Linux
 roles/               kiosk / desktop / laptop / server / brain
 tests/brain.nix      boots a Brain in a VM and checks every service answers
 hosts/live-test.nix  Stage 1 live test image
+hosts/installer.nix  the installer USB
+installer/           alis-install guided install script
+machines/            one folder per real machine (spare-laptop, ...)
 artwork/             logo + splash, drawn from the ALIS Glass palette
 ```
 
@@ -203,10 +206,40 @@ nix flake check          # builds an example of every role to make sure nothing'
 Some dashboard tiles need the home network (Home Assistant etc.), so on
 another network those will show as offline. That's expected.
 
+## Installing on a real machine (Stage 2)
+
+1. **Make the installer USB** (on dev-automation or any Linux box with Nix):
+   `nix build .#installer` → `result/iso/alis-os-installer.iso` (~1.6 GB).
+   Write it to a USB stick with Balena Etcher or Rufus.
+2. **Boot the machine from the USB.** It must be in UEFI mode (all PCs from
+   the last ~10 years; turn off "Legacy/CSM" in the firmware if it complains).
+3. The **ALIS installer starts by itself** and asks, in plain English:
+   - Wi-Fi, if there's no cable plugged in
+   - which machine this is: one listed in `machines/`, or "a new machine" (name + role)
+   - which disk. It only lists real disks, never the USB stick itself.
+   - **type ERASE to confirm.** Nothing is touched before this.
+   - a password for `alan`
+4. Takes 10–30 minutes (downloads ~2–6 GB). Then remove the USB and restart.
+5. The installer writes `machines/<name>/hardware-configuration.nix` for that
+   exact hardware and tells you the five commands to save it to GitHub.
+
+After that, the machine's own recipe lives at `/etc/alis-os`. Change it with
+`sudo nixos-rebuild switch --flake /etc/alis-os#<name>`. Every change is a new
+entry in the boot menu, so a bad change can be undone by picking the one before.
+
+**Disk layout** (the same on every machine): `ALIS-BOOT` 1 GB FAT32 + `alis-root`
+ext4 for the rest, plus a 4 GB swap file.
+
+**Office PC (later):** decided: ALIS OS replaces Ubuntu and Windows 11 stays
+(boot menu offers both). The installer only does whole-disk installs today,
+so the office PC gets its own stage with a "use this partition" mode. Don't
+run the current installer on it.
+
 ## Roadmap
 
 - [x] **Stage 1:** bootable live test image → ALIS dashboard
-- [ ] **Stage 2:** ALIS installer, real host files (`hosts/office-pc.nix`, `hosts/fridge-tablet.nix`…), first real kiosk
+- [x] **Stage 2:** ALIS guided installer + `machines/` folders (first target: a spare laptop)
+- [ ] **Stage 2b:** office PC: install into Ubuntu's partition, keep Windows
 - [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
 - [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
 - [ ] **Stage 4:** auto-updates from this repo + nightly backup to VAULT built in
