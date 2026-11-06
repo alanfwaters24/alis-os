@@ -128,3 +128,8 @@ Added `machines/office-pc` (desktop role) — not installable until Stage 2b exi
 **Installer change:** each disk labelled (Windows/NTFS files + labels, Windows start-up files, Linux); Windows/NTFS disks in red and need typing NTFS.
 **VM test** (fake Windows disk with ESP + bootmgfw.efi + NTFS, fake "Games" NTFS disk, fake 20 GB Ubuntu disk): labels correct; picking Games refused without NTFS ("Nothing was changed"); install onto the Ubuntu disk OK; **Windows and Games disk images byte-for-byte identical (sha256) afterwards**; booted ALIS OS from the Ubuntu disk with the other two attached; system running.
 **Hiccup:** this cloud box ran out of disk mid-test; QEMU paused the VM (io-error) until space was freed and it was resumed.
+
+## 2026-11-06 (cont.) — Office PC install: "build-vms.nix lacks a signature"
+
+**Cause:** the online build used `--eval-store auto --store /mnt`: files created while working out the system land in the USB's store and are then COPIED to /mnt, and copies (unlike substitutes via auto?trusted=1) need signatures the USB's paths don't have. The laptop install happened not to need any such file built locally. Couldn't reproduce here: on this box root's own store paths are fully trusted.
+**Fix:** evaluate directly on the target (`nix build --store /mnt`, as the official nixos-install does); the pinned sources are still pre-copied so nothing is fetched from GitHub. Workaround on the current USB: copy alis-install, `sed 's/--eval-store auto //'`, run the copy.

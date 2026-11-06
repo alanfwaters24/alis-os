@@ -212,7 +212,10 @@ else
   "${NIX[@]}" copy --no-check-sigs --to "local?root=/mnt" "${srcs[@]}"
   # Build into the new disk (not the USB's memory), downloading what's needed
   # and reusing anything already on the USB.
-  "${NIX[@]}" build --eval-store auto --store /mnt --no-link --extra-substituters "auto?trusted=1" "$target" \
+  # Work the system out ON the new disk (like the official nixos-install), so
+  # files made while doing so are created there rather than copied from this
+  # USB, which would need signatures the USB's software doesn't have.
+  "${NIX[@]}" build --store /mnt --no-link --extra-substituters "auto?trusted=1" "$target" \
     2> >(grep -v '^warning' >&2)
 fi
 
