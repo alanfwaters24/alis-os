@@ -167,3 +167,7 @@ ALIS OS installed on the office PC's Samsung MZFLV128 NVMe (M.2_4) with the patc
 **Asked:** `nixos-rebuild switch` failed: "path …cifs-utils-7.5/bin/mount.cifs does not exist".
 **Cause:** cifs-utils puts its programs in a separate `bin` output; the setuid wrapper (f98d53f) pointed at the main output. Earlier checks were dry-runs, which don't run the wrapper check.
 **Done:** `source = "${lib.getBin pkgs.cifs-utils}/bin/mount.cifs"`; did a real full build of office-pc (passes). Lesson: real-build (not dry-run) after changing security.wrappers.
+
+## 2026-11-06 — Confirmed on the office PC
+
+After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dolphin's NAS sidebar link opens stash with no setuid error.
