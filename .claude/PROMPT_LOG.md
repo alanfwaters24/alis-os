@@ -108,3 +108,9 @@
 **Asked:** the centred orb is annoying with false positives; have her balloon in from the top-right corner, with Stop and Mic-off sliding in separately just above the tray end of the taskbar.
 **Done:** `pkgs/alis-assistant/alis-ui.qml` — two see-through KDE layer-shell overlays (no window frame, never in the taskbar, never steals focus): the NEST orb redrawn in QML (conic teal→violet ring, glow pulsing with her voice, helix) anchored top-right, ballooning out (OutBack overshoot) and shrinking back; Mic/Stop glass buttons anchored bottom-right 76 px up, sliding in while active, red mic stays while muted. Polls the assistant's /api/status. Chromium orb + KWin rule removed. False wakes: listening gives up after 3.5 s of silence (was 5).
 **Tested:** in a headless Wayland compositor (sway, layer-shell) with a pretend assistant: idle → nothing; balloon frames; listening; speaking; done → gone; muted → red mic only. Packaged overlay drew the orb. Assistant end-to-end test still 14/14. (Qt Quick needs QT_QUICK_BACKEND=software in the GPU-less test only.)
+
+## 2026-11-06 (cont.) — Fix: "Hey ALIS" shows the orb but she doesn't listen (HP laptop)
+
+**Cause:** speech detection used NEST's fixed 0.02 loudness threshold. NEST gets Chrome's automatic mic gain; ALIS OS reads the raw mic (parec), where laptop speech is ~0.01 RMS. Also the room-noise estimate learned from "Hey ALIS" itself, raising the bar right before listening.
+**Fix:** threshold = 3× the room's quiet level (min 0.004); noise tracker falls fast / rises slowly; ~1 s pre-roll so one-breath commands aren't cut; "I didn't catch that" shown instead of vanishing; each listen logged (room/threshold/loudest/spoke) for journalctl.
+**Tested:** assistant test now uses raw laptop-level audio (speech ~0.011): new version 15/15; the previous version reproduces the bug (wakes, hears nothing).

@@ -65,7 +65,8 @@ HOME = os.path.expanduser("~")
 
 RATE, FRAME = 16000, 1280                 # 80 ms frames, what openWakeWord expects
 FRAME_BYTES = FRAME * 2
-MAX_LISTEN_S, NO_SPEECH_S, END_SILENCE_S = 10.0, 3.5, 1.0   # false "Hey ALIS"? gone after 3.5 s of silence
+MAX_LISTEN_S, NO_SPEECH_S, END_SILENCE_S = 10.0, 4.0, 1.1   # false "Hey ALIS"? gone after 4 s of silence
+PREROLL_FRAMES = 13            # keep ~1 s of sound before the wake word fires, so "Hey ALIS, lights on" in one breath works
 CAPS = ["open_app", "phone_media", "phone_volume", "brightness", "wifi", "bluetooth"]
 
 
@@ -252,7 +253,8 @@ class Assistant:
         self.ws = None
         self.session = None
         self.idle_since = time.time()
-        self.noise = 0.01
+        self.noise = 0.003          # the room's quiet level (raw mic, no automatic boost)
+        self.preroll = []           # the last ~1 s of sound while idle
 
     # -- microphone (hard off while muted) --------------------------------
     def mic_loop(self):
@@ -272,9 +274,12 @@ class Assistant:
                             self.frames.put_nowait(pcm)
                         except queue.Full:
                             pass
-                        S.set(level=min(1.0, rms(pcm) * 6))
                     elif S.state == "idle":
-                        self.noise = 0.95 * self.noise + 0.05 * rms(pcm)   # learn the room's quiet level
+                        # Learn the room's quiet level from its quietest moments: falls fast,
+                        # rises very slowly, so talking (or "Hey ALIS" itself) doesn't raise it.
+                        r = rms(pcm)
+                        self.noise = 0.8 * self.noise + 0.2 * r if r < self.noise else 0.998 * self.noise + 0.002 * r
+                        self.preroll = (self.preroll + [pcm])[-PREROLL_FRAMES:]
                         ws = self.ws
                         if ws:
                             try:
@@ -341,14 +346,19 @@ class Assistant:
             wait = min(wait * 2, 30)
 
     # -- one conversation ---------------------------------------------------
-    def listen(self):
-        """Record until she's been spoken to and it's gone quiet again."""
+    def listen(self, preroll=True):
+        """Record until she's been spoken to and it's gone quiet again.
+
+        Raw laptop mics are much quieter than a browser's boosted mic, so "speech" means
+        clearly louder than this room's own quiet level, not a fixed number."""
         while not self.frames.empty():
             self.frames.get_nowait()
+        got = list(self.preroll) if preroll else []   # the start of a one-breath command
+        self.preroll = []
         self.listening.set()
         S.set(state="listening", caption="", heard="")
-        got, spoke, quiet, t0 = [], False, 0.0, time.time()
-        thresh = max(0.02, self.noise * 3)
+        spoke, quiet, t0, peak = False, 0.0, time.time(), 0.0
+        thresh = max(0.004, self.noise * 3.0)
         try:
             while time.time() - t0 < MAX_LISTEN_S and not self.cancel.is_set():
                 try:
@@ -358,8 +368,10 @@ class Assistant:
                         break
                     continue
                 got.append(pcm)
-                loud = rms(pcm) > thresh
-                if loud:
+                r = rms(pcm)
+                peak = max(peak, r)
+                S.set(level=min(1.0, r / (thresh * 4)))
+                if r > thresh:
                     spoke, quiet = True, 0.0
                 elif spoke:
                     quiet += FRAME / RATE
@@ -370,6 +382,8 @@ class Assistant:
         finally:
             self.listening.clear()
             S.set(level=0.0)
+        log(f"listen: room={self.noise:.4f} threshold={thresh:.4f} loudest={peak:.4f} "
+            f"spoke={spoke} {time.time() - t0:.1f}s")
         return b"".join(got) if spoke else b""
 
     def converse(self):
@@ -378,8 +392,11 @@ class Assistant:
         follow_ups = 0
         try:
             while not self.cancel.is_set():
-                pcm = self.listen()
-                if self.cancel.is_set() or not pcm:
+                pcm = self.listen(preroll=follow_ups == 0)
+                if self.cancel.is_set():
+                    break
+                if not pcm:
+                    S.set(caption="I didn't catch that." if follow_ups == 0 else "")
                     break
                 S.set(state="thinking")
                 try:
@@ -389,6 +406,8 @@ class Assistant:
                     log("stt:", e)
                     break
                 if not text:
+                    log("stt: no words recognised")
+                    S.set(caption="Sorry, I didn't catch that.")
                     break
                 S.set(heard=text)
                 log("you said:", text)

@@ -102,16 +102,18 @@ class FakeNest(BaseHTTPRequestHandler):
 
 MIC = r'''
 import sys, time, struct, random
-# pretend microphone: quiet room, then someone talks for ~1.2 s, then quiet; repeat
+# pretend microphone at raw LAPTOP levels (no browser auto-boost): room ~0.0008,
+# speech ~0.011 RMS, i.e. below the old fixed 0.02 threshold. Quiet room, then
+# someone talks for ~1.2 s, then quiet; repeat
 frame = 1280
 def out(level):
     s = [int(random.gauss(0, level)) for _ in range(frame)]
     sys.stdout.buffer.write(struct.pack("<%dh" % frame, *[max(-32000, min(32000, x)) for x in s])); sys.stdout.flush()
     time.sleep(0.08)
 while True:
-    for _ in range(28): out(60)        # quiet (wake word streams meanwhile)
-    for _ in range(15): out(6000)      # speech
-    for _ in range(20): out(60)        # quiet -> end of command
+    for _ in range(28): out(25)        # quiet (wake word streams meanwhile)
+    for _ in range(15): out(350)       # speech, laptop-mic quiet
+    for _ in range(20): out(25)        # quiet -> end of command
 '''
 
 
