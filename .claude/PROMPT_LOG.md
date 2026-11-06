@@ -121,3 +121,10 @@
 **Next (Alan's choice):** office PC install (Stage 2b): ALIS OS into Ubuntu's space, Windows kept. Waiting on Alan's disk layout (lsblk, ESP size, efibootmgr) and BitLocker status before building the "keep Windows" installer mode. Risks flagged: small (100 MB) shared EFI partition → 1 GB XBOOTLDR carved from Ubuntu's space if needed; BitLocker recovery key before any boot-menu change; copy anything wanted from Ubuntu to stash first.
 Added `machines/office-pc` (desktop role) — not installable until Stage 2b exists.
 - Office PC: BitLocker OFF on C: (Protection Off, fully decrypted) → no recovery-key risk. Nothing on Ubuntu to keep. C: is 930 GB (≈ a whole 1 TB disk) → Ubuntu may be on a separate drive; if so, install whole-disk onto Ubuntu's drive and never write to the Windows drive. Waiting on lsblk / df /boot/efi / efibootmgr.
+
+## 2026-11-06 (cont.) — Office PC install mode tested (VM)
+
+**Layout (from Alan's Disk Management):** Windows 11 on Disk 3 with its own 100 MB EFI partition; four NTFS games drives (ARCADE 3.7 TB, Games, New Games, Steam); Ubuntu on Disk 5, a 119 GB NVMe (M.2 2230 from the Surface Pro 4) with its own 1 GB EFI partition. BitLocker off. **Decision:** keep picking the drive at boot (F8), so a plain whole-disk install onto the NVMe; nothing reads or writes the Windows drive.
+**Installer change:** each disk labelled (Windows/NTFS files + labels, Windows start-up files, Linux); Windows/NTFS disks in red and need typing NTFS.
+**VM test** (fake Windows disk with ESP + bootmgfw.efi + NTFS, fake "Games" NTFS disk, fake 20 GB Ubuntu disk): labels correct; picking Games refused without NTFS ("Nothing was changed"); install onto the Ubuntu disk OK; **Windows and Games disk images byte-for-byte identical (sha256) afterwards**; booted ALIS OS from the Ubuntu disk with the other two attached; system running.
+**Hiccup:** this cloud box ran out of disk mid-test; QEMU paused the VM (io-error) until space was freed and it was resumed.
