@@ -19,6 +19,7 @@
     ./nas.nix
     ./assistant.nix
     ./pane.nix
+    ./theme.nix
     ../roles/kiosk.nix
     ../roles/desktop.nix
     ../roles/laptop.nix

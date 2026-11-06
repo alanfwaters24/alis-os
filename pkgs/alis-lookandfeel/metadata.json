@@ -1,0 +1,12 @@
+{
+  "KPackageStructure": "Plasma/LookAndFeel",
+  "KPlugin": {
+    "Id": "org.alis.glass.desktop",
+    "Name": "ALIS Glass",
+    "Description": "The ALIS OS look: frosted dark teal glass, ALIS fonts, a floating glass dock.",
+    "Authors": [ { "Name": "ALIS OS" } ],
+    "License": "GPL-3.0-or-later",
+    "Version": "1.0"
+  },
+  "X-Plasma-MainScript": "defaults"
+}

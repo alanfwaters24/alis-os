@@ -4,8 +4,8 @@
 # PC apps built in.
 #
 #   Files .............. Dolphin              Settings ...... System Settings
-#   Browser ............ Chromium             Themes ........ System Settings → Appearance
-#   Office ............. OnlyOffice           Storage ....... Filelight + Partition Manager
+#   Browser ............ PANE (modules/pane.nix) Themes ..... System Settings → Appearance (ALIS Glass)
+#   Office ............. OnlyOffice + LibreOffice  Storage .. Filelight + Partition Manager
 #   Notepad ............ KWrite / Kate        Calculator .... KCalc
 #   Downloads/Archives . Ark                  App store ..... Discover (Flatpak)
 #   Photos / PDFs ...... Gwenview / Okular    Screenshots ... Spectacle
@@ -25,15 +25,23 @@ let
     startupWMClass = "alis-dashboard";
   };
 
-  # Runs once per user on first login: apply the ALIS look. After that the
-  # user can change anything in System Settings and it sticks.
+  # Runs once per person per ALIS look version (modules/theme.nix): applies
+  # the ALIS Glass Global Theme (dock, colours, glass style) and the fonts.
+  # After that they can change anything in System Settings and it sticks.
   firstLogin = pkgs.writeShellScript "alis-first-login" ''
-    marker="$HOME/.config/alis-theme-applied"
+    marker="$HOME/.config/alis-theme-applied-v${toString config.alis.theme.version}"
     [ -e "$marker" ] && exit 0
     sleep 3
+    plasma-apply-lookandfeel --apply org.alis.glass.desktop --resetLayout || true
     plasma-apply-colorscheme ALISGlass || true
     plasma-apply-wallpaperimage ${theme}/share/wallpapers/ALIS || true
     plasma-apply-desktoptheme breeze-dark || true
+    mkdir -p "$HOME/.config/Kvantum"
+    [ -e "$HOME/.config/Kvantum/kvantum.kvconfig" ] || printf '[General]\ntheme=ALISGlass\n' > "$HOME/.config/Kvantum/kvantum.kvconfig"
+    kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle kvantum || true
+    # OnlyOffice: its own dark theme (it doesn't follow system themes).
+    oo="$HOME/.config/onlyoffice/DesktopEditors.conf"
+    if [ ! -e "$oo" ]; then mkdir -p "$(dirname "$oo")"; printf '[General]\nUITheme=theme-dark\n' > "$oo"; fi
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
 in
@@ -76,14 +84,7 @@ in
       '')
     ];
 
-    # Defaults for new users (KDE reads these until the user changes them).
-    environment.etc."xdg/kdeglobals".text = ''
-      [General]
-      ColorScheme=ALISGlass
-
-      [KDE]
-      LookAndFeelPackage=org.kde.breezedark.desktop
-    '';
+    # Defaults for new users: see modules/theme.nix.
 
     # Extra apps from Flathub via Discover.
     services.flatpak.enable = true;
