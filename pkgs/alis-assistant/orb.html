@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html data-vs="idle">
+<head>
+<meta charset="utf-8">
+<title>ALIS Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<style>
+/* Ported from alis-live/public/app.css (ALIS NEST v1.5.1) -
+   same conic teal->violet ring, same per-state animations keyed on
+   html[data-vs], same --vlvl pulse driven by real playback level. */
+:root{
+  --bg:#05100D; --teal:#0891B2; --teal-l:#22D3EE; --violet:#7C3AED; --violet-l:#A78BFA;
+}
+html,body{margin:0;padding:0;background:var(--bg);height:100%;overflow:hidden;
+  font-family:'Exo 2',system-ui,sans-serif;}
+/* Column layout: orb sits in the upper-middle with room for its glow; the answer text
+   gets its own scrollable area underneath instead of being printed over the orb. */
+body{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  box-sizing:border-box;padding:4vh 0 2vh;}
+.orb-wrap{position:relative;flex:none;width:260px;height:260px;display:grid;place-items:center;}
+/* Speaking/listening glow: a soft radial gradient scaled by --vlvl. Replaces NEST's
+   box-shadow pulse, which Android WebView clipped into hard-edged slabs at this size. */
+.orb-glow{position:absolute;width:200px;height:200px;border-radius:50%;pointer-events:none;
+  opacity:0;transform:scale(1);transition:opacity .2s ease, transform .07s linear;}
+html[data-vs="listening"] .orb-glow{opacity:1;
+  background:radial-gradient(circle,rgba(45,224,200,.35) 0%,rgba(45,224,200,0) 70%);
+  transform:scale(calc(1 + var(--vlvl,0) * .35));}
+html[data-vs="speaking"] .orb-glow{opacity:1;
+  background:radial-gradient(circle,rgba(180,140,255,.38) 0%,rgba(180,140,255,0) 70%);
+  transform:scale(calc(1 + var(--vlvl,0) * .45));}
+.alis-orb{position:relative;display:inline-grid;place-items:center;width:150px;height:150px;
+  border-radius:50%;--k:1.6;transition:transform .07s linear;}
+.alis-orb .orb-ring{position:absolute;inset:0;border-radius:50%;padding:calc(2px * var(--k));
+  background:conic-gradient(from 0deg,#2DE0C8,#B48CFF,#2DE0C8);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude;animation:orbspin 6s linear infinite;
+  filter:drop-shadow(0 0 calc(5px * var(--k)) rgba(45,224,200,.5));}
+.alis-orb svg{width:62%;height:62%;position:relative;
+  filter:drop-shadow(0 0 calc(4px * var(--k)) rgba(45,224,200,.6));}
+@keyframes orbspin{to{transform:rotate(360deg);}}
+@keyframes orbbreathe{50%{transform:scale(1.08);}}
+@keyframes orbtalk{from{transform:scale(1);}to{transform:scale(1.16);}}
+@keyframes orbthink{50%{opacity:.55;}}
+html[data-vs="wake"] .alis-orb{animation:orbbreathe 3.2s ease-in-out infinite;}
+html[data-vs="listening"] .alis-orb .orb-ring{animation-duration:2.5s;}
+html[data-vs="thinking"] .alis-orb .orb-ring{animation-duration:.8s;}
+html[data-vs="thinking"] .alis-orb svg{animation:orbthink 1s ease-in-out infinite;}
+html[data-vs="speaking"] .alis-orb{transform:scale(calc(1 + var(--vlvl,0) * .12));}
+html[data-vs="speaking"].vl-none .alis-orb{animation:orbtalk .42s ease-in-out infinite alternate;}
+#you{color:#8A9A96;font-size:13px;text-align:center;padding:0 24px;margin-top:2vh;min-height:1.2em;}
+#bar{display:flex;gap:12px;justify-content:center;padding:10px 0 4px;flex:none;}
+#bar button{font:inherit;font-size:14px;color:#E8F5F0;background:rgba(255,255,255,.07);border:1px solid rgba(94,234,212,.25);
+  border-radius:999px;padding:8px 18px;cursor:pointer;}
+#bar button:hover{background:rgba(255,255,255,.14);}
+html[data-muted="1"] #mute{background:rgba(248,113,113,.25);border-color:#F87171;}
+html[data-muted="1"] .alis-orb{filter:grayscale(1) brightness(.6);}
+#caption{flex:1 1 auto;min-height:0;overflow-y:auto;width:100%;box-sizing:border-box;
+  margin-top:3vh;padding:0 24px;text-align:center;color:#cfe9e4;font-size:15px;line-height:1.45;
+  -webkit-mask:linear-gradient(#000 85%,transparent);mask:linear-gradient(#000 85%,transparent);}
+</style>
+</head>
+<body>
+  <div class="orb-wrap"><i class="orb-glow"></i>
+  <div class="alis-orb" id="orb">
+    <i class="orb-ring"></i>
+    <svg viewBox="0 0 48 48" fill="none">
+      <defs><linearGradient id="hx" x1="0" y1="0" x2="48" y2="48">
+        <stop offset="0" stop-color="#2DE0C8"/><stop offset="1" stop-color="#B48CFF"/>
+      </linearGradient></defs>
+      <path d="M14 4c0 9 20 9 20 18s-20 9-20 18" stroke="url(#hx)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M34 4c0 9-20 9-20 18s20 9 20 18" stroke="url(#hx)" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+    </svg>
+  </div>
+  </div>
+  <div id="you"></div>
+  <div id="caption"></div>
+  <div id="bar">
+    <button id="mute" onclick="post('toggle-mute')" title="Win+Shift+A">Mute mic</button>
+    <button id="stop" onclick="post('stop')" title="Esc">Stop</button>
+  </div>
+<script>
+// Called from Kotlin (AlisVoiceInteractionSession) via evaluateJavascript, exactly mirroring
+// NEST's orbSync()/orbLevel()/orbMeter() wiring so the two feel identical.
+function setVoiceState(state){ document.documentElement.dataset.vs = state; }
+function setVoiceLevel(x){ document.documentElement.style.setProperty('--vlvl', x); }
+function setCaption(t){ var c = document.getElementById('caption'); c.textContent = t || ''; c.scrollTop = 0; }
+// ALIS OS: the assistant service pushes its state here (no Kotlin on a PC).
+function post(what){ fetch('/api/' + what, {method: 'POST'}); }
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') post('stop'); });
+var es = new EventSource('/events');
+es.onmessage = function(m){
+  var s = JSON.parse(m.data);
+  if (s.state) setVoiceState(s.state);
+  if (s.level !== undefined) setVoiceLevel(s.level);
+  if (s.caption !== undefined) setCaption(s.caption);
+  if (s.heard !== undefined) document.getElementById('you').textContent = s.heard ? '\u201c' + s.heard + '\u201d' : '';
+  if (s.muted !== undefined) {
+    document.documentElement.dataset.muted = s.muted ? '1' : '0';
+    document.getElementById('mute').textContent = s.muted ? 'Unmute mic' : 'Mute mic';
+  }
+};
+</script>
+</body>
+</html>

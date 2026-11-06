@@ -17,6 +17,7 @@
     ./modules.nix
     ./home-assistant.nix
     ./nas.nix
+    ./assistant.nix
     ../roles/kiosk.nix
     ../roles/desktop.nix
     ../roles/laptop.nix

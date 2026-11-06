@@ -73,3 +73,19 @@
 4. Desktop up, but nothing connected: laptops defaulted to Tailscale addresses and the laptop wasn't on Tailscale. New `alis.network = "auto"` (laptop default): home address first, Tailscale fallback, dashboard last falls back to the built-in copy (`pkgs/alis-open-url.nix`, tested with down/up/both-down cases).
 
 **Result:** ALIS OS desktop running on the HP (photo confirmed: wallpaper, start menu, taskbar).
+
+## 2026-11-06 — ALIS Assistant built into ALIS OS (Stage A)
+
+**Asked:** build ALIS Assistant into ALIS OS, always there, with mute and stop, the voice animation as her look. Choices: orb pops up when called; hard-off mute, stop button, keyboard shortcuts; PCs/laptops and kiosks; "as much as we can give her to do, fully functional and web connected".
+
+**Done (Stage A, PCs/laptops):**
+- `pkgs/alis-assistant/assistant.py`: stdlib Python. Mic via parec → NEST `/api/wake/ws` (hey_alis) → record to silence → `/api/stt` → PC-only commands or `/api/brain` (caps open_app, phone_media, phone_volume, brightness, wifi, bluetooth) → carries out the brain's action → `/api/tts` → paplay, orb pulses from the real reply audio. Local control server on 127.0.0.1:47100 (talk/stop/mute/unmute/status, orb page + SSE).
+- `orb.html`: the phone app's ported NEST orb + Mute/Stop buttons and the live state feed.
+- `modules/assistant.nix`: user service in the desktop session, Win+A / Win+Shift+A shortcuts, start-menu controls, KWin rule (borderless, on top, not in taskbar), brightnessctl permissions.
+- `tests/assistant_test.py`: pretend NEST + pretend mic, 14 checks all passing. Found and fixed a real bug: after mute, the wake-word link stayed stuck so unmute never resumed listening.
+
+**Decisions / notes:**
+- Web questions already come through the brain → Home Assistant's conversation agent (the Claude agent), so no separate web search engine was added; "search the web for…" opens a DuckDuckGo search.
+- PC-only commands live in the assistant for now; flagged to move into brain.py as new caps (not edited: alis-live is a live module).
+- Not yet tested on real hardware: real mic/speakers, KDE shortcut registration, the KWin orb rule.
+- Kiosk + reading notifications = Stage B.

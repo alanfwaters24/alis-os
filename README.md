@@ -56,6 +56,36 @@ on login and sits in the start menu.
 | More apps | Discover (app store, with Flathub) |
 | Settings & themes | System Settings → Appearance (ALIS Glass is the default colour scheme) |
 
+## ALIS Assistant ("Hey ALIS"), built in
+
+Every PC and laptop has ALIS ready to help. Say **"Hey ALIS"**, or press
+**Win+A**, and the ALIS orb pops up, listens, answers out loud and does it.
+
+| Control | |
+|---|---|
+| **Win+A** | talk to ALIS without the wake word |
+| **Win+Shift+A** | microphone on/off. Off is a hard off: the mic isn't opened at all, and the orb goes grey |
+| **Stop** button / **Esc** | stop her talking and end the conversation |
+| Start menu | "ALIS · Talk to ALIS", "ALIS · Microphone on/off", "ALIS · Stop" |
+
+What she can do:
+- **Everything the shared brain does** (NEST `/api/brain`): lights, heating,
+  music, timers, reminders, weather and general questions through Home
+  Assistant's conversation agent (web-connected).
+- **On the PC:** open apps ("open OnlyOffice", "open SCORE"), folders ("open
+  my downloads"), volume, media (play/pause/next, "what's playing"),
+  brightness, Wi-Fi settings, Bluetooth on/off, **take a screenshot**,
+  **lock the computer**, web search ("search the web for…"), open websites,
+  "stop listening".
+
+How: it uses NEST's own voice pipeline, the same as the dashboards and the
+phone app: "Hey ALIS" detection over `/api/wake/ws` (your `hey_alis` model),
+Whisper `/api/stt`, the brain, Piper `/api/tts`. The orb is the phone app's
+ported NEST orb. Home network first, Tailscale when away. Code:
+`pkgs/alis-assistant/` (plain Python, standard library only), settings in
+`modules/assistant.nix` (`alis.assistant.startMuted`, `.enable`). Test:
+`python3 tests/assistant_test.py`.
+
 ## NAS storage (VAULT)
 
 PCs and laptops show NAS shares in the file explorer (Dolphin) sidebar.
@@ -251,6 +281,8 @@ run the current installer on it.
 - [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
 - [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
 - [ ] **Stage 4:** auto-updates from this repo + nightly backup to VAULT built in
+- [x] **ALIS Assistant A:** "Hey ALIS" + pop-up orb, hard mute, stop, shortcuts, brain + PC actions on PCs/laptops
+- [ ] **ALIS Assistant B:** read desktop notifications aloud; kiosk wall screens (orb over the full-screen dashboard, hand-over from NEST's own voice); move the PC-only commands (screenshot, lock, folders, web search) into the shared brain as new caps
 - [ ] **Stage 5: ALIS Glass theme pack:** every PC/laptop gets it automatically; switch it off in System Settings like any other theme. Built one piece at a time:
   - [ ] **5a Fonts:** Exo 2 / Rajdhani / Share Tech Mono packaged and used system-wide (everything else builds on this)
   - [ ] **5b Chromium:** ALIS colours on the frame and tabs, ALIS dashboard as the new-tab page (set by ALIS OS policy)
