@@ -322,6 +322,34 @@ Ubuntu)"** (~119G). Disks with Windows or NTFS files (games drives) are
 marked in red and need an extra "NTFS" confirmation, so they can't be
 picked by mistake.
 
+## Updates and backups (installed machines)
+
+**Updates.** Every night around 03:30 (or soon after start-up if the machine was
+off), each machine pulls the latest ALIS OS from GitHub into
+`/home/alan/alis-os` and prepares it for the **next restart**; a notification
+says "ALIS OS update ready". Nothing changes while you're using it, and the
+previous version stays in the boot menu. Laptops skip it on battery. Run one
+now: `sudo systemctl start alis-update`; see what happened:
+`journalctl -u alis-update`.
+
+**Software versions** move once a week on dev-automation
+(`tools/weekly-update.sh`, Sundays 04:15): it updates nixpkgs and the ALIS
+module repos, **builds every machine for real** and runs the assistant test,
+and only then pushes. Your phone gets an alis-push notification either way.
+Install once on dev-automation: `~/alis-os/tools/install-weekly-update.sh`.
+
+**Backups.** Nightly at 02:30 (or soon after start-up) to
+`stash/ALIS backups/<machine>` with restic: encrypted, de-duplicated, keeping
+7 daily / 4 weekly / 6 monthly. Backs up `/home` (minus Downloads, caches,
+Trash and games), ALIS module data and Home Assistant where it runs. VAULT's
+Backblaze B2 copy of DataKeeper covers it off-site.
+- **Once per machine:** `sudo alis-backup-setup` (backup password: use the
+  same one everywhere and keep it in your password manager), and the stash
+  login in `/etc/alis/nas-credentials` (see "NAS storage").
+- **Run one now:** `sudo systemctl start restic-backups-alis`
+- **Get files back:** `sudo alis-backup-browse`, then open `/run/alis-backups`
+  in Dolphin: one folder per night; copy back what you need.
+
 ## Roadmap
 
 - [x] **Stage 1:** bootable live test image → ALIS dashboard
@@ -329,7 +357,7 @@ picked by mistake.
 - [x] **Stage 2b:** office PC: whole-disk install onto Ubuntu's own NVMe, Windows/games drives untouched (disk labels + NTFS lock in the installer) — **installed 6 Nov 2026**
 - [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
 - [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
-- [ ] **Stage 4:** auto-updates from this repo + nightly backup to VAULT built in
+- [x] **Stage 4:** auto-updates from this repo (next restart) + weekly build-checked version updates on dev-automation + nightly restic backups to stash
 - [x] **ALIS Assistant A:** "Hey ALIS" + pop-up orb, hard mute, stop, shortcuts, brain + PC actions on PCs/laptops
 - [ ] **ALIS Assistant B:** read desktop notifications aloud; kiosk wall screens (orb over the full-screen dashboard, hand-over from NEST's own voice); move the PC-only commands (screenshot, lock, folders, web search) into the shared brain as new caps
 - [ ] **Stage 5: ALIS Glass theme pack:** every PC/laptop gets it automatically; switch it off in System Settings like any other theme. Built one piece at a time:

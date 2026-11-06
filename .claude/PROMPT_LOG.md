@@ -137,3 +137,10 @@ Added `machines/office-pc` (desktop role) — not installable until Stage 2b exi
 ## 2026-11-06 (cont.) — Office PC installed
 
 ALIS OS installed on the office PC's Samsung MZFLV128 NVMe (M.2_4) with the patched installer (evaluate on target); Windows (WD 1 TB, M.2_1) and the games drives untouched; Windows still chosen via F8. Hardware file pushed by Alan (c50099c: nvme/xhci/ahci, kvm-intel, Intel microcode); office-pc recipe builds with it. Two ALIS OS machines now real: spare-laptop (HP 15-db0) and office-pc.
+
+## 2026-11-06 (cont.) — Stage 4: auto-updates + nightly backups
+
+**Choices:** updates apply on next restart; versions move weekly on dev-automation after a build check; backups to a stash folder; home minus junk.
+**Done:** modules/updates.nix (nightly 03:30/Persistent, git pull + flake archive as alan, nixos-rebuild boot, battery skip, notifications), modules/backup.nix (restic → stash/ALIS backups/<machine>, excludes, 7/4/6 retention, alis-backup-setup, alis-backup-browse via restic mount), pkgs/alis-notify.nix, enabled for installed machines only; tools/weekly-update.sh + install script (dev-automation user timer, real builds of every machine + assistant test before pushing, alis-push to phone).
+**Tested:** tests/upkeep.nix VM test 6/6 (timers; no-password refusal; backup includes Documents + /var/lib/alis, excludes Downloads/.cache; byte-exact restore; second snapshot; update job without repo explains). Weekly script shellchecked but not run here (it pushes to the real branch) — first run on dev-automation.
+**Also asked:** Tailscale on office PC (already installed: `sudo tailscale up`); ALIS duotone icon theme from Papirus (roadmap 5f, next).
