@@ -161,3 +161,9 @@ ALIS OS installed on the office PC's Samsung MZFLV128 NVMe (M.2_4) with the patc
 - Wallpaper: the Global Theme had no default wallpaper, so any desktop Plasma creates later (e.g. a screen that comes up after a restart) got the Plasma default picture. Added `[Wallpaper] Image=ALIS` to the look-and-feel defaults.
 - First-login now sets the wallpaper from the stable `/etc/alis/artwork/splash.png` instead of a /nix/store path (which the weekly clean-up would delete after an update).
 - One-off repair (own marker `alis-wallpaper-fix-v1`, no layout reset) puts the ALIS wallpaper on every screen at next login.
+
+## 2026-11-06 — Fix: office PC rebuild failed on the mount.cifs wrapper
+
+**Asked:** `nixos-rebuild switch` failed: "path …cifs-utils-7.5/bin/mount.cifs does not exist".
+**Cause:** cifs-utils puts its programs in a separate `bin` output; the setuid wrapper (f98d53f) pointed at the main output. Earlier checks were dry-runs, which don't run the wrapper check.
+**Done:** `source = "${lib.getBin pkgs.cifs-utils}/bin/mount.cifs"`; did a real full build of office-pc (passes). Lesson: real-build (not dry-run) after changing security.wrappers.

@@ -92,7 +92,7 @@ in
     # mount.cifs only allows when it runs with root rights (it still uses the
     # machine's shared login in ${cfg.credentialsFile}, readable by root only).
     security.wrappers."mount.cifs" = {
-      source = "${pkgs.cifs-utils}/bin/mount.cifs";
+      source = "${lib.getBin pkgs.cifs-utils}/bin/mount.cifs";
       owner = "root"; group = "root"; setuid = true;
     };
     boot.supportedFilesystems = [ "cifs" ];
