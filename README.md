@@ -312,16 +312,21 @@ entry in the boot menu, so a bad change can be undone by picking the one before.
 **Disk layout** (the same on every machine): `ALIS-BOOT` 1 GB FAT32 + `alis-root`
 ext4 for the rest, plus a 4 GB swap file.
 
-**Office PC (later):** decided: ALIS OS replaces Ubuntu and Windows 11 stays
-(boot menu offers both). The installer only does whole-disk installs today,
-so the office PC gets its own stage with a "use this partition" mode. Don't
-run the current installer on it.
+**Office PC (conservatory):** Windows 11 is on its own drive and Ubuntu on a
+separate 120 GB NVMe (the M.2 2230 from the old Surface Pro 4), so ALIS OS
+simply replaces Ubuntu on that drive. The Windows drive and the games drives
+are never written to. Like now, you choose what starts by picking the drive in
+the PC's boot menu (**F8** on the Asus ROG board); ALIS OS becomes the default.
+In the installer pick **office-pc**, then the disk marked **"has Linux (e.g.
+Ubuntu)"** (~119G). Disks with Windows or NTFS files (games drives) are
+marked in red and need an extra "NTFS" confirmation, so they can't be
+picked by mistake.
 
 ## Roadmap
 
 - [x] **Stage 1:** bootable live test image → ALIS dashboard
 - [x] **Stage 2:** ALIS guided installer + `machines/` folders (first target: a spare laptop)
-- [ ] **Stage 2b:** office PC: install into Ubuntu's partition, keep Windows
+- [x] **Stage 2b:** office PC: whole-disk install onto Ubuntu's own NVMe, Windows/games drives untouched (disk labels + NTFS lock in the installer)
 - [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
 - [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
 - [ ] **Stage 4:** auto-updates from this repo + nightly backup to VAULT built in

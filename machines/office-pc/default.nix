@@ -1,7 +1,7 @@
 # Office PC (conservatory): Asus ROG Strix Z590-E, i7-11700K, RX 6700 XT, 32 GB.
-# Dual-boots with Windows 11: ALIS OS replaces Ubuntu, Windows stays (decided
-# 5 Nov 2026). Installed with the installer's "keep Windows" mode (Stage 2b,
-# not built yet — don't install with the whole-disk mode on this machine).
+# Dual-boots with Windows 11, which has its own drive. ALIS OS replaces Ubuntu on
+# its own 120 GB NVMe (ex-Surface Pro 4 M.2 2230); pick that disk ("has Linux")
+# in the installer. Windows is chosen from the PC's boot menu (F8), as before.
 { lib, ... }:
 {
   imports = lib.optional (builtins.pathExists ./hardware-configuration.nix) ./hardware-configuration.nix;

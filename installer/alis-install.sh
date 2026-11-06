@@ -28,7 +28,7 @@ ask()  { # ask VAR "question" [default]
 }
 
 [ "$(id -u)" = 0 ] || exec sudo -E "$0" "$@"
-pick="" dpick="" NEW_ROLE="" NEW_MACHINE=0
+pick="" dpick="" NEW_ROLE="" NEW_MACHINE=0 chosen=""
 
 clear || true
 printf '%s%s' "$teal" "$bold"
@@ -100,17 +100,53 @@ fi
 mapfile -t disks < <(lsblk -dpnbo NAME,TYPE,SIZE | awk '$2=="disk" && $3>=8000000000 {print $1}' \
   | grep -v -e "^/dev/${usb:-none}\$" -e '^/dev/fd' -e '^/dev/loop' -e '^/dev/sr' -e '^/dev/zram' || true)
 [ "${#disks[@]}" -gt 0 ] || die "No disks found (other than the USB stick)."
+
+# What's on a disk, in plain words — so a games drive or the Windows drive
+# can't be picked by mistake. Only reads (Windows check mounts read-only).
+disk_notes() {
+  local d=$1 notes=() p fs labels
+  if lsblk -lnpo FSTYPE "$d" | grep -qx ntfs; then
+    labels=$(lsblk -lnpo FSTYPE,LABEL "$d" | awk '$1=="ntfs" && $2!="" {print $2}' | paste -sd, -)
+    notes+=("has Windows/NTFS files${labels:+ ($labels)}")
+  fi
+  while read -r p fs; do
+    [ "$fs" = vfat ] || continue
+    local m; m=$(mktemp -d)
+    if mount -o ro "$p" "$m" 2>/dev/null; then
+      [ -e "$m/EFI/Microsoft/Boot/bootmgfw.efi" ] && notes+=("has Windows start-up files")
+      umount "$m"
+    fi
+    rmdir "$m"
+  done < <(lsblk -lnpo NAME,FSTYPE "$d" | tail -n +2)
+  lsblk -lnpo FSTYPE "$d" | grep -qxE 'ext4|btrfs|xfs' && notes+=("has Linux (e.g. Ubuntu)")
+  [ "${#notes[@]}" -gt 0 ] || notes+=("empty / unknown")
+  local IFS=';'; echo "${notes[*]}"
+}
+
 if [ -z "${ALIS_DISK:-}" ]; then
   i=1
   for d in "${disks[@]}"; do
-    printf '   %s%d)%s %-14s %8s  %s\n' "$violet" "$i" "$off" "$d" "$(lsblk -dno SIZE "$d")" "$(lsblk -dno MODEL "$d" | xargs)"
-    lsblk -no NAME,SIZE,FSTYPE,LABEL "$d" | tail -n +2 | sed "s/^/        ${dim}/;s/\$/${off}/"
+    n=$(disk_notes "$d")
+    col=$dim; case "$n" in *Windows*) col=$red ;; esac
+    printf '   %s%d)%s %-14s %8s  %s\n' "$violet" "$i" "$off" "$d" "$(lsblk -dno SIZE "$d" | xargs)" "$(lsblk -dno MODEL "$d" | xargs)"
+    printf '        %s%s%s\n' "$col" "${n//;/ · }" "$off"
     i=$((i + 1))
   done
   ask dpick "Number"
   ALIS_DISK=${disks[$((dpick - 1))]:-}
 fi
 [ -b "${ALIS_DISK:-}" ] || die "That isn't a disk."
+
+# Extra lock for disks with Windows or NTFS files (Windows, games drives).
+chosen=$(disk_notes "$ALIS_DISK")
+case "$chosen" in
+  *Windows*)
+    warn "  Careful: $ALIS_DISK ${chosen//;/, }."
+    warn "  That's usually the Windows drive or a games drive, not the one for ALIS OS."
+    ask ALIS_CONFIRM_NTFS "If you're sure, type NTFS to use it anyway (anything else stops)"
+    [ "$ALIS_CONFIRM_NTFS" = NTFS ] || { say "  Stopped. Nothing was changed."; exit 0; }
+    ;;
+esac
 
 # ---- 4. Confirm ------------------------------------------------------------
 step "4/6  Last check"
