@@ -70,6 +70,39 @@ in
       theme=Breeze
     '';
 
+    # Calculator: KCalc paints its own buttons, so give it ALIS colours directly.
+    environment.etc."xdg/kcalcrc".text = ''
+      [Colors]
+      BackColor=12,28,24
+      ForeColor=94,234,212
+      NumberButtonsColor=20,48,42
+      FunctionButtonsColor=14,32,27
+      StatButtonsColor=14,32,27
+      HexButtonsColor=14,32,27
+      MemoryButtonsColor=42,37,80
+      OperationButtonsColor=23,143,130
+      NumberFontsColor=232,245,240
+      FunctionFontsColor=232,245,240
+      StatFontsColor=232,245,240
+      HexFontsColor=232,245,240
+      MemoryFontsColor=232,245,240
+      OperationFontsColor=232,245,240
+
+      [Font]
+      DisplayFont=Share Tech Mono,22,-1,5,400,0,0,0,0,0
+      ButtonFont=Rajdhani,12,-1,5,600,0,0,0,0,0
+    '';
+
+    # Lock screen: the ALIS wallpaper too.
+    environment.etc."xdg/kscreenlockerrc".text = ''
+      [Greeter]
+      WallpaperPlugin=org.kde.image
+
+      [Greeter][Wallpaper][org.kde.image][General]
+      Image=file:///etc/alis/artwork/splash.png
+      PreviewImage=file:///etc/alis/artwork/splash.png
+    '';
+
     # ALIS glow edge: a soft teal glow around the active window.
     environment.etc."xdg/breezerc".text = ''
       [Common]

@@ -95,3 +95,10 @@
 **Asked:** skin Chromium as PANE with the ALIS look; then skin the other apps (office, calculator, settings, taskbar…); then a second laptop test.
 **Choices:** ALIS start page; DuckDuckGo; ALIS bookmarks bar, uBlock Origin Lite, dark web pages.
 **Done:** `pkgs/pane` (MV3 colour theme loaded by the `pane` wrapper with --force-dark-mode, start page built on alis-core's alis_glass_theme.css, PANE icon, desktop entry renamed to PANE under Chromium's own desktop-file name so the taskbar shows it) + `modules/pane.nix` (Chromium policies: start page, search, managed "ALIS" bookmarks, uBO Lite force-install, no promos/sign-in/metrics; /etc/pane/links.js generated from the module registry). Verified by launching PANE with the policies on a virtual screen and screenshotting: theme, start page, bookmarks folder, home button all applied.
+
+## 2026-11-06 (cont.) — ALIS Glass theme pack + VM desktop test
+
+**Choices:** frosted glass apps; ALIS glow edge; floating glass dock; both office suites.
+**Done:** alis-fonts (pinned google/fonts), Kvantum "ALIS Glass" generated from KvFlat (all colours moved onto the ALIS palette, frosted translucency), "ALIS Glass" Global Theme with dock layout (floating, fit-to-content, centred, ALIS logo start button, pinned apps), KWin blur, teal Breeze shadow glow, ALIS fonts in kdeglobals, LibreOffice (Qt6) + OnlyOffice dark, KCalc colours, lock-screen wallpaper. First-login script versioned (alis.theme.version = 2) so the HP picks up the new look once.
+**Tested:** full desktop ISO in a VM — floating glass dock with ALIS start button, Exo 2 titles, Rajdhani everywhere, teal selection/sliders, teal window glow, Dolphin + System Settings fully ALIS, NAS/stash under Places, dashboard fell back to the built-in copy. Found + fixed: KCalc grey buttons, default lock-screen wallpaper. Not fixed: desktop dashboard asks for location once (one click).
+**Test-harness lessons:** KDE's platform plugin crashes outside a real Plasma session (side-tests can't show the true look — boot the real desktop instead); typing via QEMU needs ( ) mapped.
