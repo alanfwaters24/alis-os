@@ -21,7 +21,9 @@ Controls (also on the orb's buttons): a tiny web server on 127.0.0.1 only.
   POST /api/stop          stop talking / end the conversation
   POST /api/mute | /api/unmute | /api/toggle-mute
   GET  /api/status        JSON state
-  GET  /  and  /events    the orb page and its live state feed
+  GET  /  and  /events    the browser orb page (kiosks/tests) and its live state feed
+The PC overlay (alis-ui.qml: orb in the top-right corner, Mic/Stop by the
+dock) polls /api/status.
 
 Python standard library only, like NEST. Settings come from the environment
 (set by ALIS OS, see modules/assistant.nix).
@@ -56,16 +58,14 @@ DEVICE = ENV("ALIS_DEVICE") or socket.gethostname()
 PORT = int(ENV("ALIS_ASSISTANT_PORT", "47100"))
 START_MUTED = ENV("ALIS_START_MUTED", "0") == "1"
 DRY_RUN = ENV("ALIS_DRY_RUN", "0") == "1"      # tests: print actions instead of doing them
-NO_ORB = ENV("ALIS_NO_ORB", "0") == "1"        # tests / headless: don't open the orb window
 AUDIO_CMD = shlex.split(ENV("ALIS_AUDIO_CMD",
                             "parec --rate=16000 --channels=1 --format=s16le --raw --latency-msec=40"))
 PLAY_CMD = shlex.split(ENV("ALIS_PLAY_CMD", "paplay"))
-ORB_CMD = shlex.split(ENV("ALIS_ORB_CMD", "chromium"))
 HOME = os.path.expanduser("~")
 
 RATE, FRAME = 16000, 1280                 # 80 ms frames, what openWakeWord expects
 FRAME_BYTES = FRAME * 2
-MAX_LISTEN_S, NO_SPEECH_S, END_SILENCE_S = 10.0, 5.0, 1.0
+MAX_LISTEN_S, NO_SPEECH_S, END_SILENCE_S = 10.0, 3.5, 1.0   # false "Hey ALIS"? gone after 3.5 s of silence
 CAPS = ["open_app", "phone_media", "phone_volume", "brightness", "wifi", "bluetooth"]
 
 
@@ -251,7 +251,6 @@ class Assistant:
         self.mic_lock = threading.Lock()
         self.ws = None
         self.session = None
-        self.orb = None
         self.idle_since = time.time()
         self.noise = 0.01
 
@@ -376,7 +375,6 @@ class Assistant:
     def converse(self):
         self.cancel.clear()
         self.session = f"{DEVICE}-{int(time.time())}"
-        self.open_orb()
         follow_ups = 0
         try:
             while not self.cancel.is_set():
@@ -575,27 +573,6 @@ class Assistant:
         except FileNotFoundError:
             log("not installed:", cmd[0])
 
-    # -- the orb window --------------------------------------------------------
-    def open_orb(self):
-        if NO_ORB or (self.orb and self.orb.poll() is None):
-            return
-        data = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "alis-orb-profile")
-        try:
-            self.orb = subprocess.Popen(ORB_CMD + [f"--app=http://127.0.0.1:{PORT}/", f"--user-data-dir={data}",
-                                                   "--window-size=380,470", "--no-first-run", "--noerrdialogs",
-                                                   "--password-store=basic", "--class=alis-orb"],
-                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
-            log("no browser for the orb:", ORB_CMD[0])
-
-    def orb_loop(self):
-        """Close the orb a few seconds after she's finished."""
-        while True:
-            time.sleep(0.5)
-            if self.orb and self.orb.poll() is None and S.state == "idle" and time.time() - self.idle_since > 4:
-                self.orb.terminate()
-                self.orb = None
-
     def main_loop(self):
         while True:
             self.trigger.wait()
@@ -698,7 +675,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     log(f"starting on {DEVICE}; NEST at {' then '.join(NEST_URLS)}; {'muted' if S.muted else 'listening'}")
-    for fn in (A.mic_loop, A.wake_loop, A.orb_loop, A.main_loop):
+    for fn in (A.mic_loop, A.wake_loop, A.main_loop):
         threading.Thread(target=fn, daemon=True).start()
     srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     srv.daemon_threads = True

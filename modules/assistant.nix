@@ -5,9 +5,11 @@
 #
 #   Win+A          talk to ALIS (no wake word needed)
 #   Win+Shift+A    microphone on/off (hard off: the mic isn't opened at all)
-#   Esc / Stop     stop her talking (on the orb), or "ALIS · Stop" in the menu
+#   Stop button    (slides in by the dock while she's active) or "ALIS · Stop" in the menu
+#   Mic button     mute / unmute; stays in the corner, red, while muted
 #
-# Everything goes to NEST (alis.modules.nest): home network first, Tailscale
+# The orb balloons out of the top-right corner (see-through overlay, no
+# window frame) and shrinks away when she's done. Everything goes to NEST (alis.modules.nest): home network first, Tailscale
 # when away (laptops). Settings: alis.assistant.*
 { config, lib, pkgs, ... }:
 let
@@ -75,6 +77,20 @@ in
       };
     };
 
+    # Her on-screen overlay: the orb balloons out of the top-right corner,
+    # Mic/Stop slide in just above the dock on the right (alis-ui.qml).
+    systemd.user.services.alis-assistant-ui = {
+      description = "ALIS Assistant on screen (orb + controls)";
+      wantedBy = [ "graphical-session.target" ];
+      partOf = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" "alis-assistant.service" ];
+      serviceConfig = {
+        ExecStart = "${pkg}/bin/alis-assistant-ui";
+        Restart = "always";
+        RestartSec = 3;
+      };
+    };
+
     # Default keyboard shortcuts (people can change them in System Settings).
     environment.etc."xdg/kglobalshortcutsrc".text = ''
       [services][alis-assistant-talk.desktop]
@@ -82,30 +98,6 @@ in
 
       [services][alis-assistant-mute.desktop]
       _launch=Meta+Shift+A
-    '';
-
-    # The orb: no title bar, always on top, not in the taskbar.
-    environment.etc."xdg/kwinrulesrc".text = ''
-      [General]
-      count=1
-      rules=alis-orb
-
-      [alis-orb]
-      Description=ALIS Assistant orb
-      title=ALIS Assistant
-      titlematch=1
-      noborder=true
-      noborderrule=2
-      above=true
-      aboverule=2
-      skiptaskbar=true
-      skiptaskbarrule=2
-      skippager=true
-      skippagerrule=2
-      skipswitcher=true
-      skipswitcherrule=2
-      size=380,470
-      sizerule=2
     '';
 
     # Brightness control without a password.

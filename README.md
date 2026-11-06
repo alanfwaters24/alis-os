@@ -97,13 +97,19 @@ use plain Chromium.
 ## ALIS Assistant ("Hey ALIS"), built in
 
 Every PC and laptop has ALIS ready to help. Say **"Hey ALIS"**, or press
-**Win+A**, and the ALIS orb pops up, listens, answers out loud and does it.
+**Win+A**: the ALIS orb balloons out of the **top-right corner** (a
+see-through overlay, no window), listens, answers out loud and does it, then
+shrinks back into the corner. **Mic** and **Stop** buttons slide in at the
+bottom right, just above the dock, while she's active; while muted, the red
+mic button stays there so you can see she's off. If she wakes by mistake and
+nobody speaks, she goes away again after 3.5 seconds.
 
 | Control | |
 |---|---|
 | **Win+A** | talk to ALIS without the wake word |
 | **Win+Shift+A** | microphone on/off. Off is a hard off: the mic isn't opened at all, and the orb goes grey |
-| **Stop** button / **Esc** | stop her talking and end the conversation |
+| **Stop** button (by the dock) | stop her talking and end the conversation |
+| **Mic** button (by the dock) | mute / unmute (red while muted) |
 | Start menu | "ALIS · Talk to ALIS", "ALIS · Microphone on/off", "ALIS · Stop" |
 
 What she can do:
