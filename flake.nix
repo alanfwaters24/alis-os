@@ -38,7 +38,7 @@
 
       # Real machines: one folder each in machines/ (see machines/README.md).
       machineConfigs = nixpkgs.lib.mapAttrs
-        (name: _: mkAlis [ ./modules/machine.nix ./machines/${name} ])
+        (name: _: mkAlis [ ./modules/machine.nix { alis.machine = name; } ./machines/${name} ])
         (nixpkgs.lib.filterAttrs (_: t: t == "directory") (builtins.readDir ./machines));
 
       installer = preinstalled: nixpkgs.lib.nixosSystem {
@@ -93,6 +93,8 @@
       // {
         # Boots a Brain in a VM and checks each service answers.
         brain-boot = import ./tests/brain.nix { inherit pkgs alisModule; };
+        # Backups + update job safety on an installed-style machine.
+        upkeep = import ./tests/upkeep.nix { inherit pkgs alisModule; };
         # An office PC linked to the existing Brain, HA and NAS shares.
         desktop-existing-brain = (mkAlis [{
           alis.role = "desktop";

@@ -18,4 +18,8 @@
     options = [ "fmask=0077" "dmask=0077" ];
   };
   swapDevices = lib.mkDefault [{ device = "/var/swapfile"; size = 4096; }];
+
+  # Installed machines look after themselves (modules/updates.nix, backup.nix).
+  alis.updates.enable = lib.mkDefault true;
+  alis.backup.enable = lib.mkDefault true;
 }

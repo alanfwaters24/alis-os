@@ -85,7 +85,8 @@ in
     };
   };
 
-  config = lib.mkIf isDesktop {
+  # Mounted on PCs/laptops, and on any machine that backs up to stash.
+  config = lib.mkIf (isDesktop || (config.alis.backup.enable && config.alis.machine != null)) {
     environment.systemPackages = [ pkgs.cifs-utils ];
     boot.supportedFilesystems = [ "cifs" ];
 
@@ -100,6 +101,7 @@ in
       ];
     }) mounted;
 
+    environment.etc."xdg/autostart/alis-nas-places.desktop".enable = isDesktop;
     environment.etc."xdg/autostart/alis-nas-places.desktop".text = ''
       [Desktop Entry]
       Type=Application

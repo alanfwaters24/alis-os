@@ -337,4 +337,5 @@ picked by mistake.
   - [x] **5b Chromium → PANE:** ALIS Glass theme, ALIS start page with module tiles, ALIS bookmarks, DuckDuckGo, uBlock Origin Lite, dark mode
   - [x] **5c KDE apps:** Kvantum "ALIS Glass" frosted style, ALIS glow edge (later: ALIS icons and cursor, animated rotating edge)
   - [x] **5d Desktop:** ALIS Glass Global Theme, floating glass dock, ALIS logo start button (later: graphical ALIS login + lock screen, animated boot splash)
+  - [ ] **5f ALIS icon theme:** every icon (tray, toolbar, folders, file types, app icons) in ALIS duotone (mint-white lines, teal/violet accents, teal glass folders), generated from the Papirus set so nothing is left in stock style
   - [x] **5e Apps that draw their own look:** OnlyOffice dark theme; LibreOffice added as the fully-ALIS office suite

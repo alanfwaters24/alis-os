@@ -20,6 +20,8 @@
     ./assistant.nix
     ./pane.nix
     ./theme.nix
+    ./updates.nix
+    ./backup.nix
     ../roles/kiosk.nix
     ../roles/desktop.nix
     ../roles/laptop.nix
