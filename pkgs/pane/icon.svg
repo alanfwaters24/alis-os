@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2DD4BF"/><stop offset=".5" stop-color="#22D3EE"/><stop offset="1" stop-color="#A78BFA"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".16"/><stop offset="1" stop-color="#ffffff" stop-opacity=".04"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#2DD4BF" stop-opacity=".45"/><stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="16" y="16" width="224" height="224" rx="52" fill="#05100D"/>
+  <circle cx="128" cy="128" r="110" fill="url(#glow)"/>
+  <!-- the "pane": a glass window in four panes -->
+  <rect x="52" y="52" width="152" height="152" rx="28" fill="url(#glass)" stroke="url(#ring)" stroke-width="10"/>
+  <path d="M128 60 V196 M60 128 H196" stroke="url(#ring)" stroke-width="7" stroke-linecap="round" opacity=".75"/>
+  <!-- ALIS orb glint in the top-left pane -->
+  <circle cx="92" cy="92" r="16" fill="none" stroke="#5EEAD4" stroke-width="5"/>
+</svg>

@@ -89,3 +89,9 @@
 - PC-only commands live in the assistant for now; flagged to move into brain.py as new caps (not edited: alis-live is a live module).
 - Not yet tested on real hardware: real mic/speakers, KDE shortcut registration, the KWin orb rule.
 - Kiosk + reading notifications = Stage B.
+
+## 2026-11-06 (cont.) — PANE, the Personal ALIS Network Explorer
+
+**Asked:** skin Chromium as PANE with the ALIS look; then skin the other apps (office, calculator, settings, taskbar…); then a second laptop test.
+**Choices:** ALIS start page; DuckDuckGo; ALIS bookmarks bar, uBlock Origin Lite, dark web pages.
+**Done:** `pkgs/pane` (MV3 colour theme loaded by the `pane` wrapper with --force-dark-mode, start page built on alis-core's alis_glass_theme.css, PANE icon, desktop entry renamed to PANE under Chromium's own desktop-file name so the taskbar shows it) + `modules/pane.nix` (Chromium policies: start page, search, managed "ALIS" bookmarks, uBO Lite force-install, no promos/sign-in/metrics; /etc/pane/links.js generated from the module registry). Verified by launching PANE with the policies on a virtual screen and screenshotting: theme, start page, bookmarks folder, home button all applied.

@@ -46,7 +46,7 @@ on login and sits in the start menu.
 | You want | App |
 |---|---|
 | File explorer | Dolphin |
-| Web browser | Chromium (open-source Chrome) |
+| Web browser | **PANE**, the Personal ALIS Network Explorer (Chromium in ALIS Glass, see below) |
 | Office (Word/Excel/PowerPoint files) | OnlyOffice |
 | Notepad / text editor | KWrite, Kate |
 | Calculator | KCalc |
@@ -55,6 +55,23 @@ on login and sits in the start menu.
 | Photos, PDFs, screenshots | Gwenview, Okular, Spectacle |
 | More apps | Discover (app store, with Flathub) |
 | Settings & themes | System Settings → Appearance (ALIS Glass is the default colour scheme) |
+
+## PANE: Personal ALIS Network Explorer
+
+The browser on every PC and laptop. Same Chromium engine underneath (same
+updates, same extensions, Chrome Web Store works), dressed as ALIS:
+- ALIS Glass theme (dark teal frame, teal buttons), dark mode for websites
+  that have one, PANE name and icon in the menu and taskbar
+- **ALIS start page** for new tabs and Home: clock, greeting, DuckDuckGo
+  search, and a glass tile for every ALIS module (teal dot = reachable;
+  laptops switch a tile to its Tailscale address when away)
+- **ALIS bookmarks folder** with every module, kept in step by ALIS OS
+- **DuckDuckGo** search, **uBlock Origin Lite** ad and tracker blocking
+- Set as Chromium policies, so they can't be lost by accident.
+
+Code: `pkgs/pane/` (theme, start page, icon, wrapper) and `modules/pane.nix`
+(policies, module links). The ALIS Dashboard app windows and kiosks still
+use plain Chromium.
 
 ## ALIS Assistant ("Hey ALIS"), built in
 
@@ -285,7 +302,7 @@ run the current installer on it.
 - [ ] **ALIS Assistant B:** read desktop notifications aloud; kiosk wall screens (orb over the full-screen dashboard, hand-over from NEST's own voice); move the PC-only commands (screenshot, lock, folders, web search) into the shared brain as new caps
 - [ ] **Stage 5: ALIS Glass theme pack:** every PC/laptop gets it automatically; switch it off in System Settings like any other theme. Built one piece at a time:
   - [ ] **5a Fonts:** Exo 2 / Rajdhani / Share Tech Mono packaged and used system-wide (everything else builds on this)
-  - [ ] **5b Chromium:** ALIS colours on the frame and tabs, ALIS dashboard as the new-tab page (set by ALIS OS policy)
+  - [x] **5b Chromium → PANE:** ALIS Glass theme, ALIS start page with module tiles, ALIS bookmarks, DuckDuckGo, uBlock Origin Lite, dark mode
   - [ ] **5c Music player (Elisa) + other KDE apps:** Kvantum "glass" theme (see-through panels), ALIS window frame with the rotating teal-violet edge, ALIS icons and cursor
   - [ ] **5d Desktop:** ALIS taskbar/start-menu theme, graphical ALIS login screen, lock screen, Plymouth boot splash with the animated rotating ring
   - [ ] **5e Apps that draw their own look** (OnlyOffice, Steam, games): ALIS dark mode + accent colours where the app allows it. Full skinning isn't possible for these.

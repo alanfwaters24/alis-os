@@ -1,0 +1,382 @@
+/* Copied from alis-core/alis_glass_theme.css — keep in sync with the ALIS-CORE blueprint. */
+/* ============================================================
+   ALIS GLASS — shared UI kit
+   Part of the ALIS-CORE blueprint. This is the real production
+   spec used across ALIS NEST, FUEL, PENY, EARN, SCORE, POST, etc.
+   (confirmed against the live alis-live dashboard, v1.16.0).
+
+   Drop this file in as-is and build your module's markup against
+   the classes below — don't reinvent the glass/border effect
+   per-module, it needs to look identical everywhere.
+   ============================================================ */
+
+/* ---- Fonts ----
+   Exo 2 / Rajdhani / Share Tech Mono + Noto Color Emoji (for emoji
+   icons that some system emoji fonts render inconsistently).
+   Load from Google Fonts in index.html (not @import — @import
+   blocks the render thread):
+
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+   If a session building this has no internet access to fetch
+   Google Fonts (e.g. a sandboxed dev session), fall back to the
+   stacks below rather than silently swapping the brand fonts —
+   flag it, don't just substitute quietly.
+*/
+
+:root {
+  /* ---- Core palette ---- */
+  --alis-bg: #05100D;
+  --alis-teal: #2DD4BF;
+  --alis-teal-bright: #5EEAD4;
+  --alis-violet: #A78BFA;
+  --alis-violet-bright: #C4B5FD;
+  --alis-cyan-glow: #22D3EE;
+  --alis-text: #E8F5F0;
+  --alis-text-dim: #8A9A96;
+  --alis-warn: #FBBF24;
+  --alis-danger: #F87171;
+
+  /* ---- Glass card surface ---- */
+  --glass-grad-top: rgba(255, 255, 255, 0.09);
+  --glass-grad-bottom: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(94, 234, 212, 0.18);
+  --glass-blur: 24px;
+  --glass-saturate: 160%;
+  --glass-radius: 14px;
+  --glass-inset-highlight: rgba(255, 255, 255, 0.14);
+
+  /* ---- Border ring animation ---- */
+  --ring-duration: 7s;
+  --ring-width: 2px;
+
+  /* ---- Fonts ---- */
+  --font-display: 'Exo 2', 'Noto Color Emoji', 'Segoe UI', Arial, sans-serif;
+  --font-body: 'Rajdhani', 'Noto Color Emoji', 'Segoe UI', Arial, sans-serif;
+  --font-mono: 'Share Tech Mono', 'Noto Color Emoji', 'Courier New', monospace;
+
+  /* ---- Layout ---- */
+  --grid-gap: 18px;
+  --page-padding: 24px;
+}
+
+/* ============================================================
+   BASE / BACKGROUND
+   Dark background with drifting teal/violet radial glow blobs.
+   Blobs sit behind everything (z-index -1), slow independent
+   drift so the background never feels static or repeats exactly.
+   ============================================================ */
+
+body.alis-glass {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--alis-bg);
+  color: var(--alis-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.alis-glow-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.alis-glow-layer::before,
+.alis-glow-layer::after {
+  content: "";
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  max-width: 700px;
+  max-height: 700px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+}
+
+.alis-glow-layer::before {
+  background: radial-gradient(circle, var(--alis-teal) 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+  animation: alis-drift-a 38s ease-in-out infinite alternate;
+}
+
+.alis-glow-layer::after {
+  background: radial-gradient(circle, var(--alis-violet) 0%, transparent 70%);
+  bottom: -15%;
+  right: -10%;
+  animation: alis-drift-b 46s ease-in-out infinite alternate;
+}
+
+@keyframes alis-drift-a {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(8vw, 6vh) scale(1.15); }
+}
+
+@keyframes alis-drift-b {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-6vw, -8vh) scale(1.1); }
+}
+
+/* ============================================================
+   GRID — 12-col desktop, collapses to 1 column on mobile
+   ============================================================ */
+
+.alis-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--grid-gap);
+  padding: var(--page-padding);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 760px) {
+  .alis-grid {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 12px;
+  }
+}
+
+/* Common card spans — use on a card to control its width on desktop.
+   They all fall back to full-width via .alis-grid's mobile rule above. */
+.span-3  { grid-column: span 3; }
+.span-4  { grid-column: span 4; }
+.span-6  { grid-column: span 6; }
+.span-8  { grid-column: span 8; }
+.span-12 { grid-column: span 12; }
+
+/* ============================================================
+   GLASS CARD
+   Translucent gradient surface, backdrop blur + saturate,
+   inset top highlight, animated iridescent conic-gradient
+   border ring, hover lift + cyan glow.
+   ============================================================ */
+
+.glass-card {
+  position: relative;
+  border-radius: var(--glass-radius);
+  padding: 20px 22px;
+  background: linear-gradient(180deg, var(--glass-grad-top), var(--glass-grad-bottom));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow: inset 0 1px 0 var(--glass-inset-highlight);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  isolation: isolate; /* keeps ::before ring contained to this card */
+}
+
+/* The rotating iridescent border ring.
+   Implementation: a ::before pseudo-element one size larger than
+   the card, filled with a conic-gradient, masked down to just the
+   border width so only the ring itself is visible (not a filled
+   shape) — this is the cheap, GPU-friendly way to do an animated
+   gradient border without a wrapper element per card.
+
+   IMPORTANT — do not animate this with `transform: rotate()`.
+   That spins the entire masked ring shape as a rigid body, which
+   visibly tilts the rounded-rectangle off-axis (looks like a
+   wonky diamond, confirmed broken by direct render test). What
+   you actually want is the colour sweep moving around a
+   geometrically fixed ring — that means animating the
+   conic-gradient's start angle via a registered custom property
+   (@property below), not the element's transform. */
+
+@property --ring-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: calc(var(--ring-width) * -1);
+  border-radius: inherit;
+  padding: var(--ring-width);
+  background: conic-gradient(
+    from var(--ring-angle),
+    var(--alis-teal),
+    var(--alis-violet),
+    var(--alis-cyan-glow),
+    var(--alis-teal)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: alis-ring-spin var(--ring-duration) linear infinite;
+  opacity: 0.55;
+  z-index: -1;
+}
+
+@keyframes alis-ring-spin {
+  to { --ring-angle: 360deg; }
+}
+
+/* ---- Browser support note ----
+   @property (used above for --ring-angle) is supported in all
+   current Chrome/Edge/Safari/Firefox, but NOT in Amazon Silk on
+   the Echo Show 15 — confirmed low-power/older-WebView territory
+   where you should be serving data-perf="light" anyway (see
+   PERFORMANCE / LIGHT MODE below), which disables this animation
+   entirely. If @property isn't supported, the ring just renders
+   static at --ring-angle's initial-value (0deg) — a harmless
+   fallback, not a crash. */
+
+/* ---- Staggering ----
+   Cards must NOT all pulse/rotate in sync — it reads as a glitch,
+   not a feature. Stagger each card's ring animation with a
+   negative animation-delay so they're all mid-cycle at page load.
+   Two ways to do it, pick whichever fits your markup:
+
+   1) CSS-only, for a fixed/small number of cards in known DOM
+      order (covers up to 8 — extend the pattern if you have more): */
+.alis-grid .glass-card:nth-child(1)::before { animation-delay: -0.5s; }
+.alis-grid .glass-card:nth-child(2)::before { animation-delay: -1.3s; }
+.alis-grid .glass-card:nth-child(3)::before { animation-delay: -2.4s; }
+.alis-grid .glass-card:nth-child(4)::before { animation-delay: -3.1s; }
+.alis-grid .glass-card:nth-child(5)::before { animation-delay: -4.2s; }
+.alis-grid .glass-card:nth-child(6)::before { animation-delay: -5.0s; }
+.alis-grid .glass-card:nth-child(7)::before { animation-delay: -5.8s; }
+.alis-grid .glass-card:nth-child(8)::before { animation-delay: -6.5s; }
+
+/*   2) JS, for a dynamic/unknown number of cards (lists, repeated
+      components) — set a random negative delay per card on render:
+
+      document.querySelectorAll('.glass-card').forEach(card => {
+        card.style.setProperty('--ring-delay', `-${(Math.random() * 7).toFixed(2)}s`);
+      });
+
+      ...and reference it in CSS instead of the nth-child block above:
+      .glass-card::before { animation-delay: var(--ring-delay, 0s); }
+*/
+
+/* ---- Hover: lift + cyan glow ---- */
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 1px 0 var(--glass-inset-highlight),
+    0 8px 28px rgba(34, 211, 238, 0.22);
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+
+.alis-glass h1, .alis-glass h2, .alis-glass h3,
+.glass-card .card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--alis-teal-bright);
+  margin: 0 0 10px 0;
+}
+
+.alis-glass code, .alis-glass .mono {
+  font-family: var(--font-mono);
+  background: rgba(94, 234, 212, 0.12);
+  color: var(--alis-teal-bright);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+/* ============================================================
+   SETTINGS COG — standard pattern across every module.
+   Top-right ⚙ icon that opens a slide-in panel, not an inline
+   card. Reference markup:
+
+   <button class="settings-cog" aria-label="Settings">⚙</button>
+   <div class="settings-panel" data-open="false"> ... </div>
+   ============================================================ */
+
+.settings-cog {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--alis-teal-bright);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 50;
+  transition: transform 0.2s ease;
+}
+.settings-cog:hover { transform: rotate(45deg); }
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(380px, 100vw);
+  background: var(--alis-bg);
+  border-left: 1px solid var(--glass-border);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 60;
+  padding: 24px;
+  overflow-y: auto;
+}
+.settings-panel[data-open="true"] {
+  transform: translateX(0);
+}
+
+/* ============================================================
+   PERFORMANCE / LIGHT MODE
+   Confirmed-necessary fallback: low-power browsers (Amazon Silk
+   on the Echo Show 15, older Fire tablets) choke on
+   backdrop-filter + the animated ring + drifting blobs — causes
+   flicker and battery/CPU drag. Auto-detect or let the user pick
+   "Light mode" in Settings, then apply this attribute to <body>:
+
+   <body class="alis-glass" data-perf="light">
+
+   This mirrors the real fallback already shipped on alis-live
+   (opaque glass, no blur, no animated rings, no drifting blobs).
+   ============================================================ */
+
+[data-perf="light"] .alis-glow-layer {
+  display: none;
+}
+
+[data-perf="light"] .glass-card {
+  background: #0B1F19; /* opaque, no translucency to fake */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-perf="light"] .glass-card::before {
+  animation: none;
+  opacity: 0.35; /* static ring, no spin */
+}
+
+[data-perf="light"] .settings-cog {
+  backdrop-filter: none;
+  background: #0B1F19;
+}
+
+/* Respect OS-level reduced-motion regardless of data-perf */
+@media (prefers-reduced-motion: reduce) {
+  .alis-glow-layer::before,
+  .alis-glow-layer::after,
+  .glass-card::before {
+    animation: none !important;
+  }
+}

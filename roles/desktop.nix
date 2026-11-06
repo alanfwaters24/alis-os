@@ -53,7 +53,6 @@ in
     environment.systemPackages = (with pkgs; [
       theme
       dashboardApp
-      chromium
       onlyoffice-desktopeditors
       kdePackages.kcalc
       kdePackages.kate
