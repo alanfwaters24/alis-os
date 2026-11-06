@@ -133,3 +133,7 @@ Added `machines/office-pc` (desktop role) — not installable until Stage 2b exi
 
 **Cause:** the online build used `--eval-store auto --store /mnt`: files created while working out the system land in the USB's store and are then COPIED to /mnt, and copies (unlike substitutes via auto?trusted=1) need signatures the USB's paths don't have. The laptop install happened not to need any such file built locally. Couldn't reproduce here: on this box root's own store paths are fully trusted.
 **Fix:** evaluate directly on the target (`nix build --store /mnt`, as the official nixos-install does); the pinned sources are still pre-copied so nothing is fetched from GitHub. Workaround on the current USB: copy alis-install, `sed 's/--eval-store auto //'`, run the copy.
+
+## 2026-11-06 (cont.) — Office PC installed
+
+ALIS OS installed on the office PC's Samsung MZFLV128 NVMe (M.2_4) with the patched installer (evaluate on target); Windows (WD 1 TB, M.2_1) and the games drives untouched; Windows still chosen via F8. Hardware file pushed by Alan (c50099c: nvme/xhci/ahci, kvm-intel, Intel microcode); office-pc recipe builds with it. Two ALIS OS machines now real: spare-laptop (HP 15-db0) and office-pc.

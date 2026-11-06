@@ -326,7 +326,7 @@ picked by mistake.
 
 - [x] **Stage 1:** bootable live test image → ALIS dashboard
 - [x] **Stage 2:** ALIS guided installer + `machines/` folders (first target: a spare laptop)
-- [x] **Stage 2b:** office PC: whole-disk install onto Ubuntu's own NVMe, Windows/games drives untouched (disk labels + NTFS lock in the installer)
+- [x] **Stage 2b:** office PC: whole-disk install onto Ubuntu's own NVMe, Windows/games drives untouched (disk labels + NTFS lock in the installer) — **installed 6 Nov 2026**
 - [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
 - [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
 - [ ] **Stage 4:** auto-updates from this repo + nightly backup to VAULT built in
