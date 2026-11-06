@@ -79,6 +79,8 @@ runCommand "alis-kde-theme" { passAsFile = [ "colors" ]; inherit colors; } ''
   cp ${artwork}/logo.png $out/share/icons/hicolor/256x256/apps/alis-logo.png
   mkdir -p $out/share/icons/hicolor/scalable/apps
   cp ${artwork}/logo.svg $out/share/icons/hicolor/scalable/apps/alis-logo.svg
+  # The ALIS Dashboard app: the DNA helix from the dashboard header.
+  cp ${./dashboard-icon.svg} $out/share/icons/hicolor/scalable/apps/alis-dashboard.svg
   # Login screen (SDDM Breeze) background
   mkdir -p $out/share/sddm/themes/breeze
   printf '[General]\nbackground=%s\ntype=image\n' ${artwork}/splash.png > $out/share/sddm/themes/breeze/theme.conf.user

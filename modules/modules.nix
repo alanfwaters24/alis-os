@@ -45,15 +45,23 @@ let
   on = lib.filterAttrs (_: m: m.mode != "off") cfg;
   envName = n: "ALIS_${lib.toUpper n}_URL";
 
-  launchers = lib.mapAttrsToList (n: m: pkgs.makeDesktopItem {
-    name = "alis-${n}";
+  # Each app opens in its own Chromium profile so KDE can tell the windows
+  # apart and show the right icon (lib/chrome-app-id.nix); a hidden entry
+  # covers the fallback address.
+  appId = import ../lib/chrome-app-id.nix { inherit lib; };
+  launcherFor = n: m: name: extra: pkgs.makeDesktopItem ({
+    inherit name;
     desktopName = "ALIS · ${m.title}";
     comment = m.about;
-    exec = "${openUrl}/bin/alis-open-url ${m.effectiveUrl} ${lib.optionalString (m.fallbackUrl != null) m.fallbackUrl} -- --class=alis-${n}";
-    icon = "${pkgs.callPackage ../artwork { }}/logo.png";
+    exec = "${openUrl}/bin/alis-open-url --profile alis-${n} ${m.effectiveUrl} ${lib.optionalString (m.fallbackUrl != null) m.fallbackUrl}";
+    icon = "alis-logo";
     categories = [ "Utility" ];
-    startupWMClass = "alis-${n}";
-  }) (lib.filterAttrs (n: m: m.ui && n != "nest") on); # NEST already has the "ALIS Dashboard" app
+  } // extra);
+  launchers = lib.concatLists (lib.mapAttrsToList (n: m:
+    [ (launcherFor n m "alis-${n}" { startupWMClass = appId m.effectiveUrl "alis-${n}"; }) ]
+    ++ lib.optional (m.fallbackUrl != null)
+      (launcherFor n m (appId m.fallbackUrl "alis-${n}") { noDisplay = true; })
+  ) (lib.filterAttrs (n: m: m.ui && n != "nest") on)); # NEST already has the "ALIS Dashboard" app
 in
 {
   options.alis.network = lib.mkOption {

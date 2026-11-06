@@ -17,7 +17,7 @@ attempt(function () { panel.location = "bottom"; });
 attempt(function () { panel.height = 2 * Math.floor(gridUnit * 2.75 / 2); });
 attempt(function () { panel.floating = true; });            // lifted off the screen edge
 attempt(function () { panel.lengthMode = "fit"; });         // only as wide as its icons: a dock
-attempt(function () { panel.alignment = "center"; });
+attempt(function () { panel.alignment = "left"; });
 attempt(function () { panel.opacity = "translucent"; });    // glass (Breeze Dark blurs behind it)
 
 var kickoff = panel.addWidget("org.kde.plasma.kickoff");

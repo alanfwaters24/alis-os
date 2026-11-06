@@ -15,15 +15,20 @@ let
   theme = pkgs.callPackage ../artwork/kde.nix { };
   artwork = pkgs.callPackage ../artwork { };
 
-  dashboardApp = pkgs.makeDesktopItem {
-    name = "alis-dashboard";
+  # Its window is matched to this by Chromium's window name (StartupWMClass),
+  # so the dock shows the DNA icon, not a generic "W". The other addresses it
+  # can fall back to get hidden entries with the same name and icon.
+  dashIds = config.alis.dashboard.appIds;
+  dashboardEntry = name: extra: pkgs.makeDesktopItem ({
+    inherit name;
     desktopName = "ALIS Dashboard";
     genericName = "ALIS home";
-    exec = "${config.alis.dashboard.openCommand}/bin/alis-open-dashboard --class=alis-dashboard";
-    icon = "${artwork}/logo.png";
+    exec = "${config.alis.dashboard.openCommand}/bin/alis-open-dashboard";
+    icon = "alis-dashboard";
     categories = [ "Utility" ];
-    startupWMClass = "alis-dashboard";
-  };
+  } // extra);
+  dashboardApp = dashboardEntry "alis-dashboard" { startupWMClass = lib.head dashIds; };
+  dashboardFallbacks = map (id: dashboardEntry id { noDisplay = true; }) (lib.tail dashIds);
 
   # Runs once per person per ALIS look version (modules/theme.nix): applies
   # the ALIS Glass Global Theme (dock, colours, glass style) and the fonts.
@@ -89,6 +94,19 @@ let
       });' || exit 0
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
+
+  # One-off: the floating dock moves from the middle to the bottom-left.
+  # Only touches the ALIS dock (bottom panel with the start button).
+  dockLeft = pkgs.writeShellScript "alis-dock-left" ''
+    marker="$HOME/.config/alis-dock-left-v1"
+    [ -e "$marker" ] && exit 0
+    sleep 6
+    ${pkgs.kdePackages.qttools}/bin/qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
+      panels().forEach(function (p) {
+        if (p.location === "bottom" && p.widgets("org.kde.plasma.kickoff").length > 0) p.alignment = "left";
+      });' || exit 0
+    mkdir -p "$(dirname "$marker")" && touch "$marker"
+  '';
 in
 {
   config = lib.mkIf isDesktop {
@@ -105,7 +123,6 @@ in
 
     environment.systemPackages = (with pkgs; [
       theme
-      dashboardApp
       onlyoffice-desktopeditors
       kdePackages.kcalc
       kdePackages.kate
@@ -117,7 +134,7 @@ in
       kdePackages.spectacle
       kdePackages.discover
       kdePackages.kdialog
-    ]) ++ [
+    ]) ++ [ dashboardApp ] ++ dashboardFallbacks ++ [
       (pkgs.makeAutostartItem { name = "alis-dashboard"; package = dashboardApp; })
       (pkgs.writeTextDir "etc/xdg/autostart/alis-first-login.desktop" ''
         [Desktop Entry]
@@ -151,9 +168,24 @@ in
         X-KDE-autostart-phase=2
         NoDisplay=true
       '')
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-dock-left.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS dock position
+        Exec=${dockLeft}
+        X-KDE-autostart-phase=2
+        NoDisplay=true
+      '')
     ];
 
     # Defaults for new users: see modules/theme.nix.
+    # Start each login fresh (just the dashboard), instead of KDE reopening
+    # whatever was open at log-out, e.g. a terminal. Changeable in System
+    # Settings → Session → Desktop Session.
+    environment.etc."xdg/ksmserverrc".text = ''
+      [General]
+      loginMode=emptySession
+    '';
 
     # Extra apps from Flathub via Discover.
     services.flatpak.enable = true;

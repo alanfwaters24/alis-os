@@ -181,3 +181,17 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 
 **Found:** ALIS icons now showing after clearing ~/.cache/icon-cache.kcache and re-logging. Start button config was `icon=/etc/alis/artwork/logo.png` (a file path), which the dock drew blank.
 **Done:** ALIS logo installed as a named icon `alis-logo` (hicolor, svg + 256 png); Global Theme layout uses it; one-off fix (marker `alis-launcher-icon-v1`) switches existing start buttons still on the old file path, via plasmashell's scripting D-Bus call — a person's own pick is left alone. Real builds of office-pc + spare-laptop pass.
+
+## 2026-11-06 — Dock left, DNA dashboard icon, no more "W", no terminal at login
+
+**Asked:** start button icon now back; move the dock back to the left; the NEST dashboard icon should be the DNA helix already used; the "W" on the task bar is annoying; why does a terminal open at every login.
+**Answers (picker):** floating dock moved to bottom-left (not a full-width bar); the W is the ALIS dashboard window.
+**Found:** on Wayland Chromium ignores `--class` and names `--app` windows `chrome-<host>_<path>-<profile>` (port dropped) — tested under headless sway with Chromium 156. KDE couldn't match that to alis-dashboard.desktop → generic Wayland "W". And every ALIS app on dev-automation would share one name. Terminal = KDE restoring the previous session.
+**Done:**
+- `lib/chrome-app-id.nix` computes that name; `alis-open-url --profile NAME` gives each ALIS app its own Chromium profile (alis-dashboard, alis-<module>), so names are unique; desktop entries get StartupWMClass = that name, plus hidden entries for fallback addresses. Verified the real launcher produces `chrome-localhost__-alis-dashboard`.
+- PANE: policy ProfilePickerOnStartupAvailability=1 so the extra profiles don't trigger the "who's using Chrome" picker.
+- DNA helix (from alis-dashboard header, static) as named icon `alis-dashboard`; module launchers use `alis-logo`.
+- Dock alignment left in the Global Theme + one-off (marker alis-dock-left-v1) for existing docks.
+- /etc/xdg/ksmserverrc loginMode=emptySession.
+- Real builds: office-pc, spare-laptop, kiosk + desktop-existing-brain checks pass.
+**Note:** ALIS app windows start with fresh profiles, so any app logins (e.g. DOSE) need signing in once more.

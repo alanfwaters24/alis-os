@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 64 64">
+  <!-- ALIS Dashboard app icon: the DNA helix from the alis-dashboard header, on an ALIS Glass tile. -->
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0C1C18"/>
+      <stop offset="1" stop-color="#05100D"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#A78BFA" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="hlx-teal" x1="0" y1="0" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#0891B2"/>
+    </linearGradient>
+    <linearGradient id="hlx-violet" x1="0" y1="0" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="url(#tile)" stroke="url(#edge)" stroke-width="1.5"/>
+  <g transform="translate(11.1 8.8) scale(1.1)">
+    <line x1="10" y1="6"  x2="28" y2="6"  stroke="#22D3EE" stroke-opacity="0.5" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="27" y1="11" x2="11" y2="11" stroke="#A78BFA" stroke-opacity="0.5" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="11" y1="20" x2="27" y2="20" stroke="#22D3EE" stroke-opacity="0.5" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="27" y1="29" x2="11" y2="29" stroke="#A78BFA" stroke-opacity="0.5" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="11" y1="38" x2="27" y2="38" stroke="#22D3EE" stroke-opacity="0.5" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M 19 2 C 32 2, 32 10, 19 11 C 6 11, 6 19, 19 20 C 32 20, 32 28, 19 29 C 6 29, 6 37, 19 38 C 32 38, 32 42, 19 42"
+          stroke="url(#hlx-teal)" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M 19 2 C 6 2, 6 10, 19 11 C 32 11, 32 19, 19 20 C 6 20, 6 28, 19 29 C 32 29, 32 37, 19 38 C 6 38, 6 42, 19 42"
+          stroke="url(#hlx-violet)" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="19" cy="11" r="2.5" fill="#22D3EE"/>
+    <circle cx="19" cy="20" r="2.5" fill="#A78BFA"/>
+    <circle cx="19" cy="29" r="2.5" fill="#22D3EE"/>
+    <circle cx="19" cy="38" r="2.5" fill="#A78BFA"/>
+  </g>
+</svg>

@@ -15,10 +15,12 @@ let
     ++ lib.optional (cfg.url == nest.effectiveUrl && nest.fallbackUrl != null) nest.fallbackUrl
     ++ lib.optional cfg.serveLocally localUrl);
   openUrl = pkgs.callPackage ../pkgs/alis-open-url.nix { };
+  appId = import ../lib/chrome-app-id.nix { inherit lib; };
+  profile = "alis-dashboard";
 
   # alis-open-dashboard [extra chromium flags...]
   openDashboard = pkgs.writeShellScriptBin "alis-open-dashboard" ''
-    exec ${openUrl}/bin/alis-open-url --wait ${toString cfg.fallbackAfter} ${lib.escapeShellArgs candidates} -- "$@"
+    exec ${openUrl}/bin/alis-open-url --wait ${toString cfg.fallbackAfter} --profile ${profile} ${lib.escapeShellArgs candidates} -- "$@"
   '';
 in
 {
@@ -54,6 +56,12 @@ in
     };
     localUrl = lib.mkOption { type = lib.types.str; default = localUrl; readOnly = true; };
     allUrls = lib.mkOption { type = lib.types.listOf lib.types.str; default = candidates; readOnly = true; description = "Every address the dashboard may open, in order."; };
+    appIds = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = map (u: appId u profile) candidates;
+      readOnly = true;
+      description = "The window names the dashboard can open with (one per address), for matching its dock icon.";
+    };
     openCommand = lib.mkOption {
       type = lib.types.package;
       default = openDashboard;

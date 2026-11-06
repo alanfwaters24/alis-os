@@ -29,6 +29,9 @@ in
       NewTabPageLocation = start;
       ShowHomeButton = true;
       RestoreOnStartup = 5;                      # open the start page
+      # ALIS apps each have their own profile (pkgs/alis-open-url.nix); don't
+      # ask "who's using Chrome?" every time PANE opens.
+      ProfilePickerOnStartupAvailability = 1;
       # Search
       DefaultSearchProviderEnabled = true;
       DefaultSearchProviderName = "DuckDuckGo";
