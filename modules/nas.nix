@@ -88,6 +88,13 @@ in
   # Mounted on PCs/laptops, and on any machine that backs up to stash.
   config = lib.mkIf (isDesktop || (config.alis.backup.enable && config.alis.machine != null)) {
     environment.systemPackages = [ pkgs.cifs-utils ];
+    # Clicking a share in Dolphin's sidebar mounts it as the person, which
+    # mount.cifs only allows when it runs with root rights (it still uses the
+    # machine's shared login in ${cfg.credentialsFile}, readable by root only).
+    security.wrappers."mount.cifs" = {
+      source = "${pkgs.cifs-utils}/bin/mount.cifs";
+      owner = "root"; group = "root"; setuid = true;
+    };
     boot.supportedFilesystems = [ "cifs" ];
 
     fileSystems = lib.mapAttrs' (n: _: lib.nameValuePair "${cfg.mountRoot}/${n}" {
@@ -98,6 +105,7 @@ in
         "x-systemd.automount" "noauto" "_netdev"
         "x-systemd.idle-timeout=600" "x-systemd.mount-timeout=10s"
         "gid=users" "file_mode=0664" "dir_mode=0775" "nofail"
+        "user"   # lets Dolphin's sidebar connect it too (via the mount.cifs wrapper below)
       ];
     }) mounted;
 
