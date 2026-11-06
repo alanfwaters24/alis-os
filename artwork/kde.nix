@@ -74,6 +74,11 @@ runCommand "alis-kde-theme" { passAsFile = [ "colors" ]; inherit colors; } ''
   cat > $out/share/wallpapers/ALIS/metadata.json <<'EOF'
   { "KPlugin": { "Id": "ALIS", "Name": "ALIS Glass", "License": "CC-BY-SA-4.0" } }
   EOF
+  # The ALIS logo as a named icon ("alis-logo"), e.g. the dock's start button.
+  mkdir -p $out/share/icons/hicolor/256x256/apps
+  cp ${artwork}/logo.png $out/share/icons/hicolor/256x256/apps/alis-logo.png
+  mkdir -p $out/share/icons/hicolor/scalable/apps
+  cp ${artwork}/logo.svg $out/share/icons/hicolor/scalable/apps/alis-logo.svg
   # Login screen (SDDM Breeze) background
   mkdir -p $out/share/sddm/themes/breeze
   printf '[General]\nbackground=%s\ntype=image\n' ${artwork}/splash.png > $out/share/sddm/themes/breeze/theme.conf.user

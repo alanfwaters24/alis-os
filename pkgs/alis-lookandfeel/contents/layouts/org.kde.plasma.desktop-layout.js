@@ -23,7 +23,7 @@ attempt(function () { panel.opacity = "translucent"; });    // glass (Breeze Dar
 var kickoff = panel.addWidget("org.kde.plasma.kickoff");
 attempt(function () {
   kickoff.currentConfigGroup = ["General"];
-  kickoff.writeConfig("icon", "/etc/alis/artwork/logo.png"); // ALIS logo as the start button
+  kickoff.writeConfig("icon", "alis-logo"); // ALIS logo as the start button (named icon, artwork/kde.nix)
 });
 
 var tasks = panel.addWidget("org.kde.plasma.icontasks");

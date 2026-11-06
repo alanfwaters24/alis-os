@@ -71,6 +71,24 @@ let
     ${pkgs.kdePackages.plasma-workspace}/libexec/plasma-changeicons ALIS || true
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
+
+  # One-off: the dock's start button pointed at a picture file, which Plasma
+  # drew blank; switch it to the named "alis-logo" icon. Only touches start
+  # buttons still on the old ALIS file, so a person's own choice is kept.
+  launcherFix = pkgs.writeShellScript "alis-launcher-icon" ''
+    marker="$HOME/.config/alis-launcher-icon-v1"
+    [ -e "$marker" ] && exit 0
+    sleep 6
+    ${pkgs.kdePackages.qttools}/bin/qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript '
+      panels().forEach(function (p) {
+        p.widgets("org.kde.plasma.kickoff").forEach(function (w) {
+          w.currentConfigGroup = ["General"];
+          var i = w.readConfig("icon", "");
+          if (i === "" || i === "/etc/alis/artwork/logo.png") w.writeConfig("icon", "alis-logo");
+        });
+      });' || exit 0
+    mkdir -p "$(dirname "$marker")" && touch "$marker"
+  '';
 in
 {
   config = lib.mkIf isDesktop {
@@ -122,6 +140,14 @@ in
         Type=Application
         Name=ALIS icons
         Exec=${iconsSwitch}
+        X-KDE-autostart-phase=2
+        NoDisplay=true
+      '')
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-launcher-icon.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS start button
+        Exec=${launcherFix}
         X-KDE-autostart-phase=2
         NoDisplay=true
       '')

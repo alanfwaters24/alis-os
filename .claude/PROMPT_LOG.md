@@ -176,3 +176,8 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 
 **Asked:** User saw the before/after preview (30 key icons: apps, folders, tray) and chose "Looks good, enable it".
 **Done:** alis-icons package installed on desktops/laptops; system default `[Icons] Theme=ALIS` (/etc/xdg/kdeglobals + Global Theme defaults); one-off switch at next login (marker `alis-icons-v1`, kwriteconfig6 + plasma-changeicons). alis.theme.version NOT bumped, so the dock and layout aren't reset. Theme inherits breeze-dark/hicolor for anything Papirus lacks.
+
+## 2026-11-06 — App launcher (start button) blank on the office PC
+
+**Found:** ALIS icons now showing after clearing ~/.cache/icon-cache.kcache and re-logging. Start button config was `icon=/etc/alis/artwork/logo.png` (a file path), which the dock drew blank.
+**Done:** ALIS logo installed as a named icon `alis-logo` (hicolor, svg + 256 png); Global Theme layout uses it; one-off fix (marker `alis-launcher-icon-v1`) switches existing start buttons still on the old file path, via plasmashell's scripting D-Bus call — a person's own pick is left alone. Real builds of office-pc + spare-laptop pass.
