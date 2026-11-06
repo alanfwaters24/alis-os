@@ -114,3 +114,9 @@
 **Cause:** speech detection used NEST's fixed 0.02 loudness threshold. NEST gets Chrome's automatic mic gain; ALIS OS reads the raw mic (parec), where laptop speech is ~0.01 RMS. Also the room-noise estimate learned from "Hey ALIS" itself, raising the bar right before listening.
 **Fix:** threshold = 3× the room's quiet level (min 0.004); noise tracker falls fast / rises slowly; ~1 s pre-roll so one-breath commands aren't cut; "I didn't catch that" shown instead of vanishing; each listen logged (room/threshold/loudest/spoke) for journalctl.
 **Tested:** assistant test now uses raw laptop-level audio (speech ~0.011): new version 15/15; the previous version reproduces the bug (wakes, hears nothing).
+
+## 2026-11-06 (cont.) — Laptop test 2 passed; office PC prep
+
+**Result on the HP:** after the update, "Hey ALIS" → orb from the top-right → she hears and answers out loud (full voice chain on real hardware).
+**Next (Alan's choice):** office PC install (Stage 2b): ALIS OS into Ubuntu's space, Windows kept. Waiting on Alan's disk layout (lsblk, ESP size, efibootmgr) and BitLocker status before building the "keep Windows" installer mode. Risks flagged: small (100 MB) shared EFI partition → 1 GB XBOOTLDR carved from Ubuntu's space if needed; BitLocker recovery key before any boot-menu change; copy anything wanted from Ubuntu to stash first.
+Added `machines/office-pc` (desktop role) — not installable until Stage 2b exists.
