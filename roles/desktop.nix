@@ -39,6 +39,10 @@ let
     mkdir -p "$HOME/.config/Kvantum"
     [ -e "$HOME/.config/Kvantum/kvantum.kvconfig" ] || printf '[General]\ntheme=ALISGlass\n' > "$HOME/.config/Kvantum/kvantum.kvconfig"
     kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle kvantum || true
+    # Lock screen: ALIS wallpaper (also the system default, see modules/theme.nix).
+    kwriteconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin org.kde.image || true
+    kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General \
+      --key Image file:///etc/alis/artwork/splash.png || true
     # OnlyOffice: its own dark theme (it doesn't follow system themes).
     oo="$HOME/.config/onlyoffice/DesktopEditors.conf"
     if [ ! -e "$oo" ]; then mkdir -p "$(dirname "$oo")"; printf '[General]\nUITheme=theme-dark\n' > "$oo"; fi
