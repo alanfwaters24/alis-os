@@ -171,3 +171,8 @@ ALIS OS installed on the office PC's Samsung MZFLV128 NVMe (M.2_4) with the patc
 ## 2026-11-06 — Confirmed on the office PC
 
 After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dolphin's NAS sidebar link opens stash with no setuid error.
+
+## 2026-11-06 — ALIS icons enabled (5f)
+
+**Asked:** User saw the before/after preview (30 key icons: apps, folders, tray) and chose "Looks good, enable it".
+**Done:** alis-icons package installed on desktops/laptops; system default `[Icons] Theme=ALIS` (/etc/xdg/kdeglobals + Global Theme defaults); one-off switch at next login (marker `alis-icons-v1`, kwriteconfig6 + plasma-changeicons). alis.theme.version NOT bumped, so the dock and layout aren't reset. Theme inherits breeze-dark/hicolor for anything Papirus lacks.

@@ -14,6 +14,7 @@ let
   fonts = pkgs.callPackage ../pkgs/alis-fonts { };
   kvantumTheme = pkgs.callPackage ../pkgs/alis-glass-kvantum { };
   lookandfeel = pkgs.callPackage ../pkgs/alis-lookandfeel { };
+  icons = pkgs.callPackage ../pkgs/alis-icons { };
 in
 {
   options.alis.theme.version = lib.mkOption {
@@ -28,6 +29,7 @@ in
     environment.systemPackages = [
       kvantumTheme
       lookandfeel
+      icons
       pkgs.kdePackages.qtstyleplugin-kvantum
       pkgs.libreoffice-qt6-fresh
       pkgs.hunspellDicts.en_GB-ise
@@ -52,7 +54,7 @@ in
       widgetStyle=kvantum
 
       [Icons]
-      Theme=breeze-dark
+      Theme=ALIS
     '';
 
     # Blur behind see-through windows, menus and the dock.

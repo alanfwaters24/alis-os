@@ -60,6 +60,17 @@ let
     plasma-apply-wallpaperimage /etc/alis/artwork/splash.png || exit 0
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
+
+  # One-off switch to the ALIS icons (own marker, nothing else reset).
+  # Picking other icons in System Settings afterwards sticks.
+  iconsSwitch = pkgs.writeShellScript "alis-icons-switch" ''
+    marker="$HOME/.config/alis-icons-v1"
+    [ -e "$marker" ] && exit 0
+    sleep 5
+    kwriteconfig6 --file kdeglobals --group Icons --key Theme ALIS || exit 0
+    ${pkgs.kdePackages.plasma-workspace}/libexec/plasma-changeicons ALIS || true
+    mkdir -p "$(dirname "$marker")" && touch "$marker"
+  '';
 in
 {
   config = lib.mkIf isDesktop {
@@ -103,6 +114,14 @@ in
         Type=Application
         Name=ALIS wallpaper
         Exec=${wallpaperFix}
+        X-KDE-autostart-phase=2
+        NoDisplay=true
+      '')
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-icons-switch.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS icons
+        Exec=${iconsSwitch}
         X-KDE-autostart-phase=2
         NoDisplay=true
       '')
