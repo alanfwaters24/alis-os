@@ -151,3 +151,13 @@ ALIS OS installed on the office PC's Samsung MZFLV128 NVMe (M.2_4) with the patc
 - Dolphin sidebar "stash" (Remote) failed: "not installed setuid root" → fixed (f98d53f: setuid mount.cifs + "user" option).
 - `sudo alis-backup-setup` + first run: **snapshot 4738ad25 saved, 170 MiB of /home stored as 50 MiB**, retention 7/4/6 applied. Nightly from now on.
 - Desktop settings "reverted" after restart: config files untouched since the 18:00 first-login look step, i.e. ALIS didn't re-apply; changes made after 18:00 were most likely never saved by Plasma before the restart. Awaiting Alan's photo/details.
+
+## 2026-11-06 — Office PC: PipeWire crash + desktop background still wrong
+
+**Asked:** KDE crash reporter kept popping up coredumps; desktop background still wrong after logging out/in.
+**Found:** One real crash: PipeWire (sound) segfaulted in its `x11-bell` add-on when Xwayland went away at log-out (the ~20 drkonqi dumps were the crash reporter itself failing to open its window). Sound restarted on its own.
+**Done:**
+- Disabled PipeWire's x11-bell module (`module.x11.bell = false`) on desktops/laptops.
+- Wallpaper: the Global Theme had no default wallpaper, so any desktop Plasma creates later (e.g. a screen that comes up after a restart) got the Plasma default picture. Added `[Wallpaper] Image=ALIS` to the look-and-feel defaults.
+- First-login now sets the wallpaper from the stable `/etc/alis/artwork/splash.png` instead of a /nix/store path (which the weekly clean-up would delete after an update).
+- One-off repair (own marker `alis-wallpaper-fix-v1`, no layout reset) puts the ALIS wallpaper on every screen at next login.

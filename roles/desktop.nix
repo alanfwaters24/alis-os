@@ -34,7 +34,7 @@ let
     sleep 3
     plasma-apply-lookandfeel --apply org.alis.glass.desktop --resetLayout || true
     plasma-apply-colorscheme ALISGlass || true
-    plasma-apply-wallpaperimage ${theme}/share/wallpapers/ALIS || true
+    plasma-apply-wallpaperimage /etc/alis/artwork/splash.png || true
     plasma-apply-desktoptheme breeze-dark || true
     mkdir -p "$HOME/.config/Kvantum"
     [ -e "$HOME/.config/Kvantum/kvantum.kvconfig" ] || printf '[General]\ntheme=ALISGlass\n' > "$HOME/.config/Kvantum/kvantum.kvconfig"
@@ -46,6 +46,18 @@ let
     # OnlyOffice: its own dark theme (it doesn't follow system themes).
     oo="$HOME/.config/onlyoffice/DesktopEditors.conf"
     if [ ! -e "$oo" ]; then mkdir -p "$(dirname "$oo")"; printf '[General]\nUITheme=theme-dark\n' > "$oo"; fi
+    mkdir -p "$(dirname "$marker")" && touch "$marker"
+  '';
+
+  # One-off repair (own marker, doesn't touch the dock or layout): earlier
+  # builds could leave a desktop on the Plasma default picture, e.g. a
+  # screen that came up after a restart. Puts the ALIS wallpaper on every
+  # screen once; anything chosen afterwards in System Settings sticks.
+  wallpaperFix = pkgs.writeShellScript "alis-wallpaper-fix" ''
+    marker="$HOME/.config/alis-wallpaper-fix-v1"
+    [ -e "$marker" ] && exit 0
+    sleep 8
+    plasma-apply-wallpaperimage /etc/alis/artwork/splash.png || exit 0
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
 in
@@ -86,6 +98,14 @@ in
         X-KDE-autostart-phase=2
         NoDisplay=true
       '')
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-wallpaper-fix.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS wallpaper
+        Exec=${wallpaperFix}
+        X-KDE-autostart-phase=2
+        NoDisplay=true
+      '')
     ];
 
     # Defaults for new users: see modules/theme.nix.
@@ -105,6 +125,11 @@ in
     fonts.packages = with pkgs; [ noto-fonts noto-fonts-color-emoji dejavu_fonts liberation_ttf ];
     hardware.graphics.enable = true;
     services.pipewire = { enable = true; pulse.enable = true; };
+    # PipeWire's "X11 bell" add-on (old X beep sounds) crashes PipeWire when
+    # Xwayland goes away at log-out (seen on the office PC). Not needed.
+    services.pipewire.extraConfig.pipewire."99-alis-no-x11-bell" = {
+      "context.properties" = { "module.x11.bell" = false; };
+    };
     services.printing.enable = true;
     hardware.bluetooth.enable = true;
     xdg.portal.enable = true;

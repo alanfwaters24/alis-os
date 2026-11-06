@@ -19,3 +19,6 @@ cursorTheme=breeze_cursors
 
 [KSplash]
 Theme=org.kde.breeze.desktop
+
+[Wallpaper]
+Image=ALIS
