@@ -195,3 +195,12 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 - /etc/xdg/ksmserverrc loginMode=emptySession.
 - Real builds: office-pc, spare-laptop, kiosk + desktop-existing-brain checks pass.
 **Note:** ALIS app windows start with fresh profiles, so any app logins (e.g. DOSE) need signing in once more.
+
+## 2026-11-07 — ALIS boot picker for the office PC (ALIS OS / Windows tiles)
+
+**Asked:** a neater way to pick the OS at boot: splash screen, mouse/keyboard, proper icons, easy for the kids to get to Windows for games.
+**Answers (picker):** default = last one used; wait 30 s and make it easy to change or turn off; tile named "Windows".
+**Done:** `modules/boot-picker.nix` + `artwork/boot-picker.nix`: rEFInd (graphical boot menu) on ALIS-BOOT at EFI/alis-picker, in front of systemd-boot; ALIS Glass background, 192 px glass tiles (ALIS ring / four-pane Windows tile), glow selection frame; Windows found by rEFInd's own scan (our tile replaces its Windows icon); ALIS-BOOT excluded from scanning. Re-written each rebuild (systemd-boot extraInstallCommands), registered with efibootmgr and kept first in BootOrder. `sudo alis-boot-picker SECONDS|forever|off` changes the wait without a rebuild (kept across rebuilds). systemd-boot timeout 0 (hold Space for older ALIS versions). Enabled on office-pc.
+**Tested** in QEMU + OVMF with an ALIS drive and a Windows-style drive, using the real install script's output: tiles + highlight render; arrows + Enter start the right system; after restarting, last used (Windows) is preselected; only Shut down / Restart buttons.
+**Problems found by testing:** manual Windows entry by partition GUID failed in test (identical FAT serials on my test disks — real disks differ — but switched to rEFInd's own Windows scan anyway, more robust); rEFInd 0.14.2 `showtools` keeps the leftover defaults (padded the list with absent tools); `enable_mouse` hides the keyboard highlight and arrows+Enter started the wrong tile → mouse is opt-in (`alis.bootPicker.mouse`), on-screen hint says arrow keys.
+**Not tested here:** the real PC's firmware (Asus Z590) and efibootmgr on real NVRAM.

@@ -315,12 +315,34 @@ ext4 for the rest, plus a 4 GB swap file.
 **Office PC (conservatory):** Windows 11 is on its own drive and Ubuntu on a
 separate 120 GB NVMe (the M.2 2230 from the old Surface Pro 4), so ALIS OS
 simply replaces Ubuntu on that drive. The Windows drive and the games drives
-are never written to. Like now, you choose what starts by picking the drive in
-the PC's boot menu (**F8** on the Asus ROG board); ALIS OS becomes the default.
+are never written to. At power-on the **ALIS boot picker** shows two big
+tiles, **ALIS OS** and **Windows** (arrow keys + Enter), and after 30 seconds
+starts whichever was used last. The PC's own boot menu (**F8** on the Asus ROG
+board) still works as a backup.
 In the installer pick **office-pc**, then the disk marked **"has Linux (e.g.
 Ubuntu)"** (~119G). Disks with Windows or NTFS files (games drives) are
 marked in red and need an extra "NTFS" confirmation, so they can't be
 picked by mistake.
+
+### ALIS boot picker (dual-boot PCs)
+
+`alis.bootPicker.enable = true;` in a machine's folder (on for the office PC).
+It's rEFInd, themed ALIS (`modules/boot-picker.nix`, artwork in
+`artwork/boot-picker.nix`), on ALIS's own boot partition in front of ALIS's
+normal boot loader; Windows is found on its own drive and nothing there is
+changed. Every rebuild re-writes it and makes sure it's first in the PC's
+boot order (Windows updates sometimes push themselves first).
+
+```
+sudo alis-boot-picker 30        # wait 30 s, then start the last one used (default)
+sudo alis-boot-picker forever   # wait until someone picks
+sudo alis-boot-picker off       # start the last one used straight away (hold a key for the menu)
+alis-boot-picker                # show the current setting
+```
+
+Older ALIS versions: pick ALIS OS, then hold **Space**. Mouse support is
+`alis.bootPicker.mouse = true;`, off by default: in testing it hid the
+keyboard highlight and arrows + Enter could start the wrong system.
 
 ## Updates and backups (installed machines)
 
@@ -356,6 +378,7 @@ Backblaze B2 copy of DataKeeper covers it off-site.
 - [x] **Stage 2:** ALIS guided installer + `machines/` folders (first target: a spare laptop)
 - [x] **Stage 2b:** office PC: whole-disk install onto Ubuntu's own NVMe, Windows/games drives untouched (disk labels + NTFS lock in the installer) — **installed 6 Nov 2026**
 - [x] **Brain role:** HA, voice, Ollama, NEST + brain, alis-push, GLANCE, with a VM boot test
+- [x] **Boot picker:** ALIS OS / Windows tiles at power-on for dual-boot PCs (office PC), last-used default, adjustable wait
 - [ ] **Stage 3:** STALL, then NOVA/FUEL/PENY/EARN as they're rebuilt, into `alis.apps`
 - [x] **Stage 4:** auto-updates from this repo (next restart) + weekly build-checked version updates on dev-automation + nightly restic backups to stash
 - [x] **ALIS Assistant A:** "Hey ALIS" + pop-up orb, hard mute, stop, shortcuts, brain + PC actions on PCs/laptops
@@ -365,5 +388,5 @@ Backblaze B2 copy of DataKeeper covers it off-site.
   - [x] **5b Chromium → PANE:** ALIS Glass theme, ALIS start page with module tiles, ALIS bookmarks, DuckDuckGo, uBlock Origin Lite, dark mode
   - [x] **5c KDE apps:** Kvantum "ALIS Glass" frosted style, ALIS glow edge (later: ALIS icons and cursor, animated rotating edge)
   - [x] **5d Desktop:** ALIS Glass Global Theme, floating glass dock, ALIS logo start button (later: graphical ALIS login + lock screen, animated boot splash)
-  - [ ] **5f ALIS icon theme:** every icon (tray, toolbar, folders, file types, app icons) in ALIS duotone (mint-white lines, teal/violet accents, teal glass folders), generated from the Papirus set so nothing is left in stock style
+  - [x] **5f ALIS icon theme:** every icon (tray, toolbar, folders, file types, app icons) in ALIS duotone (mint-white lines, teal/violet accents, teal glass folders), generated from the Papirus set so nothing is left in stock style
   - [x] **5e Apps that draw their own look:** OnlyOffice dark theme; LibreOffice added as the fully-ALIS office suite

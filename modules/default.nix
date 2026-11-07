@@ -22,6 +22,7 @@
     ./theme.nix
     ./updates.nix
     ./backup.nix
+    ./boot-picker.nix
     ../roles/kiosk.nix
     ../roles/desktop.nix
     ../roles/laptop.nix
