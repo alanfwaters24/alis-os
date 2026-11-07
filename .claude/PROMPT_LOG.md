@@ -218,3 +218,8 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 - Plasma style "alis": Breeze graphics recoloured + ALIS Glass colours file; default via /etc/xdg/plasmarc, Global Theme, first-login, one-off switch.
 - OnlyOffice: no icon swapping possible (baked in); "ALIS" UI theme generated from its own Dark theme CSS (dark greys → deep ALIS greens), copied to ~/.local/share/onlyoffice/desktopeditors/uithemes each login and chosen once. Could NOT run OnlyOffice in the test container (its Chromium crashes here, Dark theme too) — needs checking on the PC.
 - Bug caught in testing: `pgrep -f` matched any command line mentioning DesktopEditors → switched both office checks to `pgrep -x`.
+
+## 2026-11-07 — Note: keep the PC assistant in step with the phone app
+
+**Asked (during the ALIS Assistant 0.8.0 "read on request" build):** any changes made to the phone app need applying to ALIS OS's assistant behaviour too — make a note in this repo for a future update.
+**Done:** `pkgs/alis-assistant/PHONE-PARITY.md` — the standing rule plus a "waiting to be ported" list, starting with phone 0.8.0's read-on-request notifications (what the phone does, and what porting it to the desktop would involve: D-Bus notifications, banner by the orb, locked-screen chime, tray entry, `notifications_read` brain cap). README's assistant section points to it. No code changed — porting needs planning with Alan first.
