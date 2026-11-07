@@ -142,6 +142,10 @@ ported NEST orb. Home network first, Tailscale when away. Code:
 `modules/assistant.nix` (`alis.assistant.startMuted`, `.enable`). Test:
 `python3 tests/assistant_test.py`.
 
+**Keep in step with the phone app:** any change to the ALIS Assistant phone
+app's assistant behaviour must be applied here too. Pending changes are listed
+in `pkgs/alis-assistant/PHONE-PARITY.md`.
+
 ## NAS storage (VAULT)
 
 PCs and laptops show NAS shares in the file explorer (Dolphin) sidebar.
