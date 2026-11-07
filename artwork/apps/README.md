@@ -7,7 +7,7 @@ app's icon changes there, copy it here again (256 px, rounded like the rest).
 | File | From |
 |---|---|
 | alis-dashboard.png | arch-store `icons/alis.png` (ALIS NEST) |
-| alis-dose.png | arch-store `icons/dose.png` (same as dose `icon-512.png`) |
+| alis-dose.png | arch-store `icons/dose.png` (same as dose `icon-512.png`; corners rounded here) |
 | alis-arch.png | arch-store `icons/store-512.png` (ALIS App Store) |
 | alis-vault.png | arch-store `icons/vault.png` (corners rounded here) |
 | alis-stall.svg | alis-stall `public/favicon.svg` |
