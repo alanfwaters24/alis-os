@@ -26,6 +26,7 @@ in
   arch = { title = "ARCH"; about = "ALIS App Store"; host = devAutomation; port = null; tsPort = 10002; ui = true; live = true; builtin = false; };
   stall = { title = "STALL"; about = "Etsy listings (Katie's shop)"; host = devAutomation; port = 3514; tsPort = 10007; ui = true; live = true; builtin = false; };
   speak = { title = "ALIS Speak"; about = "Text-to-speech server"; host = devAutomation; port = 3513; tsPort = null; ui = false; live = true; builtin = false; };
+  vault = { title = "VAULT"; about = "NAS admin (TrueNAS)"; host = vault; port = 80; tsPort = null; ui = true; live = true; builtin = false; };
   flick = { title = "FLICK"; about = "Films & TV (Jellyfin)"; host = vault; port = 8096; tsPort = null; ui = true; live = false; builtin = false; };
 
   fuel = { title = "FUEL"; about = "Food & Usage Energy Log"; host = devAutomation; port = 3501; tsPort = 10004; ui = true; live = false; builtin = false; };

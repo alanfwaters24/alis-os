@@ -18,13 +18,13 @@ let
   pkg = pkgs.callPackage ../pkgs/alis-assistant { port = cfg.port; };
   nestUrls = lib.filter (u: u != null) [ nest.effectiveUrl nest.fallbackUrl ];
 
-  control = { name, label, cmd, shortcut ? null, comment }: pkgs.writeTextDir "share/applications/${name}.desktop" ''
+  control = { name, label, cmd, shortcut ? null, comment, icon ? "alis-assistant" }: pkgs.writeTextDir "share/applications/${name}.desktop" ''
     [Desktop Entry]
     Type=Application
     Name=${label}
     Comment=${comment}
     Exec=${pkg}/bin/alis-assistant-ctl ${cmd}
-    Icon=${pkgs.callPackage ../artwork { }}/logo.png
+    Icon=${icon}
     Categories=Utility;
     ${lib.optionalString (shortcut != null) "X-KDE-Shortcuts=${shortcut}"}
   '';
@@ -52,8 +52,8 @@ in
     environment.systemPackages = [
       pkg
       (control { name = "alis-assistant-talk"; label = "ALIS · Talk to ALIS"; cmd = "talk"; shortcut = "Meta+A"; comment = "Ask ALIS something"; })
-      (control { name = "alis-assistant-mute"; label = "ALIS · Microphone on/off"; cmd = "toggle-mute"; shortcut = "Meta+Shift+A"; comment = "Stop or start ALIS listening"; })
-      (control { name = "alis-assistant-stop"; label = "ALIS · Stop"; cmd = "stop"; comment = "Stop ALIS talking"; })
+      (control { name = "alis-assistant-mute"; label = "ALIS · Microphone on/off"; cmd = "toggle-mute"; shortcut = "Meta+Shift+A"; comment = "Stop or start ALIS listening"; icon = "microphone-sensitivity-muted"; })
+      (control { name = "alis-assistant-stop"; label = "ALIS · Stop"; cmd = "stop"; comment = "Stop ALIS talking"; icon = "media-playback-stop"; })
     ];
 
     # Her service runs in each person's desktop session (their mic, their apps).

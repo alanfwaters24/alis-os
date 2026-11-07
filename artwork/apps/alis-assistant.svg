@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 48 48">
+  <!-- From alis-assistant app/src/main/res/drawable/ic_launcher.xml (helix), on a rounded tile. -->
+  <rect width="48" height="48" rx="10.5" fill="#05100D"/>
+  <path d="M14 4c0 9 20 9 20 18s-20 9-20 18" fill="none" stroke="#2DE0C8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M34 4c0 9-20 9-20 18s20 9 20 18" fill="none" stroke="#B48CFF" stroke-width="3" stroke-linecap="round" stroke-opacity="0.55"/>
+</svg>

@@ -54,7 +54,9 @@ let
     desktopName = "ALIS · ${m.title}";
     comment = m.about;
     exec = "${openUrl}/bin/alis-open-url --profile alis-${n} ${m.effectiveUrl} ${lib.optionalString (m.fallbackUrl != null) m.fallbackUrl}";
-    icon = "alis-logo";
+    # The app's own icon (artwork/apps) if there is one, else the ALIS logo.
+    icon = if builtins.pathExists ../artwork/apps/alis-${n}.png || builtins.pathExists ../artwork/apps/alis-${n}.svg
+      then "alis-${n}" else "alis-logo";
     categories = [ "Utility" ];
   } // extra);
   launchers = lib.concatLists (lib.mapAttrsToList (n: m:
