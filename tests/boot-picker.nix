@@ -32,7 +32,10 @@ pkgs.testers.runNixOSTest {
     virtualisation.useBootLoader = true;
     virtualisation.useEFIBoot = true;
     virtualisation.efi.keepVariables = true;
-    virtualisation.emptyDiskImages = [ 64 ];   # becomes the "Windows" drive
+    # Becomes the "Windows" drive. On the test firmware's boot list like an
+    # installed drive: without that, OVMF deletes its Windows Boot Manager
+    # entry at the next start (a real PC keeps it; F8 shows it).
+    virtualisation.emptyDiskImages = [ { size = 64; driveConfig.deviceExtraOpts.bootindex = "3"; } ];
     alis.updates.enable = false;
     alis.backup.enable = false;
     swapDevices = lib.mkForce [ ];
