@@ -95,6 +95,8 @@
         brain-boot = import ./tests/brain.nix { inherit pkgs alisModule; };
         # Backups + update job safety on an installed-style machine.
         upkeep = import ./tests/upkeep.nix { inherit pkgs alisModule; };
+        # The boot picker on a UEFI machine with a second "Windows" drive.
+        boot-picker = import ./tests/boot-picker.nix { inherit pkgs alisModule; };
         # An office PC linked to the existing Brain, HA and NAS shares.
         desktop-existing-brain = (mkAlis [{
           alis.role = "desktop";
