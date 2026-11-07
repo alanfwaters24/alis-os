@@ -3,5 +3,5 @@
 { runCommand, python3, papirus-icon-theme }:
 runCommand "alis-icons" { nativeBuildInputs = [ python3 ]; } ''
   mkdir -p $out/share/icons
-  python3 ${./make-icons.py} ${papirus-icon-theme}/share/icons $out/share/icons/ALIS
+  python3 ${./.}/make-icons.py ${papirus-icon-theme}/share/icons $out/share/icons/ALIS
 ''

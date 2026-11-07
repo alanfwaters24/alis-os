@@ -15,6 +15,13 @@ let
   kvantumTheme = pkgs.callPackage ../pkgs/alis-glass-kvantum { };
   lookandfeel = pkgs.callPackage ../pkgs/alis-lookandfeel { };
   icons = pkgs.callPackage ../pkgs/alis-icons { };
+  # LibreOffice's own toolbar icons, recoloured (pkgs/alis-libreoffice-icons).
+  libreoffice = pkgs.libreoffice-qt6-fresh;
+  loIcons = pkgs.callPackage ../pkgs/alis-libreoffice-icons { libreoffice-unwrapped = libreoffice.unwrapped; };
+  loIconsSetup = pkgs.writeShellScript "alis-libreoffice-icons" ''
+    ${pkgs.procps}/bin/pgrep -u "$(id -u)" -f soffice.bin >/dev/null && exit 0   # not while LibreOffice is open
+    exec ${pkgs.python3}/bin/python3 ${../pkgs/alis-libreoffice-icons/setup.py} /run/current-system/sw/share/alis-libreoffice
+  '';
 in
 {
   options.alis.theme.version = lib.mkOption {
@@ -31,10 +38,19 @@ in
       lookandfeel
       icons
       pkgs.kdePackages.qtstyleplugin-kvantum
-      pkgs.libreoffice-qt6-fresh
+      libreoffice
+      loIcons
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-libreoffice-icons.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS LibreOffice icons
+        Exec=${loIconsSetup}
+        NoDisplay=true
+      '')
       pkgs.hunspellDicts.en_GB-ise
     ];
-    environment.pathsToLink = [ "/share/Kvantum" ];
+    # /run/current-system/sw/share/alis-libreoffice stays put across updates.
+    environment.pathsToLink = [ "/share/Kvantum" "/share/alis-libreoffice" ];
 
     # Defaults for everyone (KDE reads these until a person changes them).
     environment.etc."xdg/kdeglobals".text = ''

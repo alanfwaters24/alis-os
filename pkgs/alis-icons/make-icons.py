@@ -12,7 +12,6 @@ Every colour in every icon is moved onto ALIS duotone (alis-core palette):
 Shapes are untouched. Symbolic (tray/panel) icons also follow the ALIS colour
 scheme's text colour at run time (Papirus' FollowsColorScheme).
 """
-import colorsys
 import os
 import re
 import shutil
@@ -52,39 +51,8 @@ for name in os.listdir(dark):
         shutil.copyfile(os.path.realpath(s), d)
 
 
-def rgb2hex(r, g, b):
-    return "#%02x%02x%02x" % tuple(max(0, min(255, round(v * 255))) for v in (r, g, b))
-
-
-def alis(hexcol):
-    h = hexcol.lstrip("#")
-    if len(h) == 3:
-        h = "".join(c * 2 for c in h)
-    r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
-    hue, light, sat = colorsys.rgb_to_hls(r, g, b)
-    deg = hue * 360
-    if sat < 0.10:                               # greys
-        if light > 0.6:
-            return rgb2hex(*colorsys.hls_to_rgb(155 / 360, min(0.94, light), 0.38))   # mint-white
-        return rgb2hex(*colorsys.hls_to_rgb(165 / 360, light * 0.85, 0.30))          # dark green
-    if 190 <= deg <= 232:                        # Papirus/Breeze blues -> ALIS teal
-        new = 172
-    else:                                        # everything else -> teal..cyan..violet
-        new = 178 + (deg / 360) * 82             # 178 (teal-cyan) .. 260 (violet)
-    sat2 = min(0.85, max(0.45, sat))
-    light2 = min(0.82, max(0.22, light))
-    return rgb2hex(*colorsys.hls_to_rgb(new / 360, light2, sat2))
-
-
-colour = re.compile(r"#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b")
-cache = {}
-
-
-def fix(m):
-    k = m.group(0).lower()
-    if k not in cache:
-        cache[k] = alis(k)
-    return cache[k]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from recolour import cache, recolour_svg  # noqa: E402
 
 
 # 2. Recolour every real SVG (links follow automatically).
@@ -96,7 +64,7 @@ for root, _dirs, files in os.walk(out):
             continue
         with open(p, encoding="utf-8", errors="surrogateescape") as fh:
             svg = fh.read()
-        new = colour.sub(fix, svg)
+        new = recolour_svg(svg)
         if new != svg:
             os.chmod(p, 0o644)
             with open(p, "w", encoding="utf-8", errors="surrogateescape") as fh:
