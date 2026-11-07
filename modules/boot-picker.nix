@@ -58,6 +58,11 @@ let
     # Windows drive, where it isn't).
     cp ${theme}/os_windows.png ${dir}/icons/os_win8.png
     cp ${theme}/os_windows.png ${dir}/icons/os_win.png
+    # rEFInd puts a small drive-type badge on firmware entries (the Windows
+    # tile) even with badges hidden; blank ones, so nothing shows.
+    for b in vol_internal vol_external vol_efi vol_net vol_optical; do
+      cp ${refind}/share/refind/icons/transparent.png ${dir}/icons/$b.png
+    done
 
     # Each tile names its drive by partition ID. (On the office PC, leaving
     # it to rEFInd made it look for ALIS OS on the wrong drive.)
