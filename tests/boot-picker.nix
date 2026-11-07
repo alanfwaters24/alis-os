@@ -52,7 +52,8 @@ pkgs.testers.runNixOSTest {
             from PIL import Image
             im = Image.open(f"{machine.out_dir}/probe.png").convert("RGB")
             w, h = im.size
-            r, g, b = im.getpixel((w // 6, h // 5))
+            x, y = w // 6, h // 5
+            r, g, b = im.crop((x, y, x + 1, y + 1)).tobytes()[:3]
             if g > r + 8 and g > 20:
                 return
             time.sleep(5)
