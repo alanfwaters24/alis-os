@@ -90,7 +90,7 @@ pkgs.testers.runNixOSTest {
         machine.screenshot("picker")
         machine.send_key("ret")
         machine.wait_for_unit("multi-user.target")
-        print(machine.succeed("alis-boot-picker log | grep -i -E 'manual|volume|Launching|Error' | head -40"))
+        print(machine.succeed("alis-boot-picker log | grep -i -E 'driver|connect|volume|manual|SYSTEM|Error' | head -60"))
 
     with subtest("picker -> Windows"):
         machine.shutdown()

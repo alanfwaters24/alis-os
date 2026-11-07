@@ -46,11 +46,15 @@ let
   install = pkgs.writeShellScript "alis-boot-picker-install" ''
     set -u
     export PATH=${lib.makeBinPath (with pkgs; [ coreutils util-linux efibootmgr gnugrep gnused gawk ])}
-    mkdir -p ${dir}/alis ${dir}/icons ${dir}/fonts
+    mkdir -p ${dir}/alis ${dir}/icons ${dir}/fonts ${dir}/drivers_x64
 
     cp ${refind}/share/refind/refind_x64.efi ${dir}/refind_x64.efi
     cp ${refind}/share/refind/icons/func_*.png ${refind}/share/refind/icons/mouse.png ${dir}/icons/
     cp ${refind}/share/refind/fonts/ubuntu-mono-24.png ${dir}/fonts/
+    # Loading any driver makes rEFInd connect every drive first. Without it,
+    # PCs with "Fast Boot" (and the test VM) only wake the boot drive, so the
+    # Windows drive is "Not Found". (ext4: reads Linux drives, changes nothing.)
+    cp ${refind}/share/refind/drivers_x64/ext4_x64.efi ${dir}/drivers_x64/
     cp ${theme}/*.png ${dir}/alis/
     # The Windows tile's picture: rEFInd picks it by the loader's name from
     # its own icons folder (a tile's own "icon" would be looked up on the
@@ -144,7 +148,7 @@ let
           on) grep -q '^log_level' "$f" || ${pkgs.gnused}/bin/sed -i '1a log_level 1' "$f"; sync; echo "Logging on: restart, then run: sudo alis-boot-picker log" ;;
           off) ${pkgs.gnused}/bin/sed -i '/^log_level/d' "$f"; rm -f ${dir}/refind.log; sync; echo "Logging off." ;;
           *) [ -e ${dir}/refind.log ] || { echo "No log yet: run 'sudo alis-boot-picker log on' and restart." >&2; exit 1; }
-             ${pkgs.glibc.bin}/bin/iconv -f UTF-16 -t UTF-8 ${dir}/refind.log ;;
+             ${pkgs.glibc.bin}/bin/iconv -f UTF-16 -t UTF-8 ${dir}/refind.log | tr -d '\r' ;;
         esac
         exit 0 ;;
       off) v=-1 ;;
