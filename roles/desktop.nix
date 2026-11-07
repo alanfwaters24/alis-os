@@ -40,7 +40,7 @@ let
     plasma-apply-lookandfeel --apply org.alis.glass.desktop --resetLayout || true
     plasma-apply-colorscheme ALISGlass || true
     plasma-apply-wallpaperimage /etc/alis/artwork/splash.png || true
-    plasma-apply-desktoptheme breeze-dark || true
+    plasma-apply-desktoptheme alis || true
     mkdir -p "$HOME/.config/Kvantum"
     [ -e "$HOME/.config/Kvantum/kvantum.kvconfig" ] || printf '[General]\ntheme=ALISGlass\n' > "$HOME/.config/Kvantum/kvantum.kvconfig"
     kwriteconfig6 --file kdeglobals --group KDE --key widgetStyle kvantum || true
@@ -101,6 +101,15 @@ let
     [ -e "$marker" ] && exit 0
     sleep 5
     plasma-apply-cursortheme ALIS-cursors || exit 0
+    mkdir -p "$(dirname "$marker")" && touch "$marker"
+  '';
+
+  # One-off switch to the ALIS Plasma style (dock, tray, pop-ups).
+  plasmaThemeSwitch = pkgs.writeShellScript "alis-plasma-theme-switch" ''
+    marker="$HOME/.config/alis-plasma-theme-v1"
+    [ -e "$marker" ] && exit 0
+    sleep 7
+    plasma-apply-desktoptheme alis || exit 0
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
 
@@ -182,6 +191,14 @@ in
         Type=Application
         Name=ALIS cursors
         Exec=${cursorsSwitch}
+        X-KDE-autostart-phase=2
+        NoDisplay=true
+      '')
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-plasma-theme-switch.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS Plasma style
+        Exec=${plasmaThemeSwitch}
         X-KDE-autostart-phase=2
         NoDisplay=true
       '')

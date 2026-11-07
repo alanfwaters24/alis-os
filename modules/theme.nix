@@ -16,6 +16,7 @@ let
   lookandfeel = pkgs.callPackage ../pkgs/alis-lookandfeel { };
   icons = pkgs.callPackage ../pkgs/alis-icons { };
   cursors = pkgs.callPackage ../pkgs/alis-cursors { };
+  plasmaTheme = pkgs.callPackage ../pkgs/alis-plasma-theme { alisKdeTheme = pkgs.callPackage ../artwork/kde.nix { }; };
   # LibreOffice's own toolbar icons, recoloured (pkgs/alis-libreoffice-icons).
   libreoffice = pkgs.libreoffice-qt6-fresh;
   loIcons = pkgs.callPackage ../pkgs/alis-libreoffice-icons { libreoffice-unwrapped = libreoffice.unwrapped; };
@@ -39,6 +40,7 @@ in
       lookandfeel
       icons
       cursors
+      plasmaTheme
       pkgs.kdePackages.qtstyleplugin-kvantum
       libreoffice
       loIcons
@@ -81,6 +83,11 @@ in
       cursorTheme=ALIS-cursors
     '';
     services.displayManager.sddm.settings.Theme.CursorTheme = "ALIS-cursors";
+    # ALIS Plasma style (pkgs/alis-plasma-theme) for anyone who hasn't picked one.
+    environment.etc."xdg/plasmarc".text = ''
+      [Theme]
+      name=alis
+    '';
     xdg.icons.fallbackCursorThemes = [ "ALIS-cursors" ];
 
     # Blur behind see-through windows, menus and the dock.

@@ -8,7 +8,7 @@ widgetStyle=kvantum
 Theme=ALIS
 
 [plasmarc][Theme]
-name=breeze-dark
+name=alis
 
 [kwinrc][org.kde.kdecoration2]
 library=org.kde.breeze
