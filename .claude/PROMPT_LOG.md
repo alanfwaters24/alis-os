@@ -218,3 +218,9 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 - Plasma style "alis": Breeze graphics recoloured + ALIS Glass colours file; default via /etc/xdg/plasmarc, Global Theme, first-login, one-off switch.
 - OnlyOffice: no icon swapping possible (baked in); "ALIS" UI theme generated from its own Dark theme CSS (dark greys → deep ALIS greens), copied to ~/.local/share/onlyoffice/desktopeditors/uithemes each login and chosen once. Could NOT run OnlyOffice in the test container (its Chromium crashes here, Dark theme too) — needs checking on the PC.
 - Bug caught in testing: `pgrep -f` matched any command line mentioning DesktopEditors → switched both office checks to `pgrep -x`.
+
+## 2026-11-07 — Boot picker fix after first real start on the office PC
+
+**Seen (photos):** one tile with a "missing picture" box; "Not Found while loading systemd-bootx64.efi"; "Error setting graphics mode 2147483647 x 2147483647" (resolution max unsupported); no Windows tile.
+**Cause (reproduced in QEMU):** a rEFInd tile's icon and loader are looked up on that tile's *volume*; on the real PC rEFInd's guess of the volume for the ALIS entry was wrong, and the Windows auto-scan found nothing.
+**Fix:** every tile names its drive by partition ID (found at rebuild: ALIS from /boot, Windows = the other EFI partition holding bootmgfw.efi); scanning off (manual entries only); Windows tile's picture via rEFInd's own icons folder (os_win8.png); `resolution max` removed. Tested in QEMU: both tiles start the right system. Added `sudo alis-boot-picker drives` and `sudo alis-boot-picker log on|off` (rEFInd log, shown decoded) for the next real-PC check.

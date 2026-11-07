@@ -17,11 +17,17 @@
 #                                   # (hold any key at power-on to get the menu)
 #   alis-boot-picker                # show the current setting
 #
+#   sudo alis-boot-picker drives    # which drives the tiles point at
+#   sudo alis-boot-picker log on    # record what the picker does at the next start
+#   sudo alis-boot-picker log       # ... and show it (log off to stop)
+#
 # Older ALIS versions: after picking ALIS OS, hold Space to see them.
 #
 # Tested in a UEFI virtual PC (OVMF) with an ALIS drive + a Windows-style drive:
-# both tiles show, arrows + Enter start the right one. Two rEFInd 0.14.2 quirks
-# handled below: `showtools` only replaces as many default buttons as it lists
+# both tiles show, arrows + Enter start the right one. On the real office PC
+# rEFInd looked for ALIS OS on the wrong drive when left to guess, so every
+# tile now names its drive by partition ID. rEFInd 0.14.2 quirks handled
+# below: `showtools` only replaces as many default buttons as it lists
 # (so the list is padded with tools that don't exist here), and `enable_mouse`
 # hides the keyboard highlight and made arrows + Enter start the wrong tile in
 # testing, so the mouse is opt-in.
@@ -46,38 +52,62 @@ let
     cp ${refind}/share/refind/icons/func_*.png ${refind}/share/refind/icons/mouse.png ${dir}/icons/
     cp ${refind}/share/refind/fonts/ubuntu-mono-24.png ${dir}/fonts/
     cp ${theme}/*.png ${dir}/alis/
-    # rEFInd finds Windows by itself and shows its icon: make that the ALIS tile.
+    # The Windows tile's picture: rEFInd picks it by the loader's name from
+    # its own icons folder (a tile's own "icon" would be looked up on the
+    # Windows drive, where it isn't).
     cp ${theme}/os_windows.png ${dir}/icons/os_win8.png
     cp ${theme}/os_windows.png ${dir}/icons/os_win.png
 
-    # Keep the wait chosen with `alis-boot-picker`; first time, use the default.
+    # Each tile names its drive by partition ID. (On the office PC, leaving
+    # it to rEFInd made it look for ALIS OS on the wrong drive.)
+    own=$(findmnt -no SOURCE ${esp})
+    alis=$(lsblk -no PARTUUID "$own" | tr a-z A-Z)
+    win=""
+    tmp=$(mktemp -d)
+    while read -r dev type puuid; do
+      [ "$type" = "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ] && [ "$dev" != "$own" ] || continue
+      if mount -o ro "$dev" "$tmp" 2>/dev/null; then
+        [ -e "$tmp/EFI/Microsoft/Boot/bootmgfw.efi" ] && win=$(echo "$puuid" | tr a-z A-Z)
+        umount "$tmp"
+      fi
+      [ -n "$win" ] && break
+    done < <(lsblk -rno PATH,PARTTYPE,PARTUUID)
+    rmdir "$tmp"
+
+    # Keep the wait and the log setting chosen with `alis-boot-picker`.
     timeout=$(sed -n 's/^timeout //p' ${conf} 2>/dev/null)
     [ -n "$timeout" ] || timeout=${timeoutValue cfg.timeout}
+    log=$(sed -n 's/^log_level //p' ${conf} 2>/dev/null)
 
     {
       echo "# Written by ALIS OS (modules/boot-picker.nix) on every rebuild."
       echo "# Change the wait with: sudo alis-boot-picker 30|forever|off"
+      echo "# ALIS boot partition: $alis   Windows boot partition: ''${win:-not found}"
+      [ -n "$log" ] && echo "log_level $log"
       echo "timeout $timeout"
       echo "default_selection +"
-      # Windows is found by scanning the other drives; ALIS's own boot
-      # partition isn't scanned (ALIS OS is the entry below).
-      echo "scanfor manual,internal"
-      echo 'dont_scan_volumes "ALIS-BOOT"'
-      echo "dont_scan_dirs EFI/boot,EFI/systemd,EFI/nixos,EFI/Linux"
-      echo "resolution max"
+      echo "scanfor manual"
       ${lib.optionalString cfg.mouse ''echo "enable_mouse"; echo "mouse_size 24"''}
       echo "showtools shutdown,reboot,gdisk,memtest,mok_tool,apple_recovery,fwupdate,netboot,gdisk,memtest,mok_tool,apple_recovery,fwupdate,netboot"
       cat ${theme}/theme.conf
       echo
       echo 'menuentry "ALIS OS" {'
+      [ -n "$alis" ] && echo "  volume $alis"
       echo '  icon /EFI/alis-picker/alis/os_alis.png'
       echo '  loader /EFI/systemd/systemd-bootx64.efi'
       echo '}'
+      if [ -n "$win" ]; then
+        echo
+        echo 'menuentry "Windows" {'
+        echo "  volume $win"
+        echo '  loader /EFI/Microsoft/Boot/bootmgfw.efi'
+        echo '}'
+      fi
     } > ${conf}.tmp && mv ${conf}.tmp ${conf}
+    [ -n "$win" ] || echo "ALIS boot picker: no Windows boot partition found; showing ALIS OS only."
 
     # Make the picker the first thing the PC starts (re-checked every rebuild,
     # e.g. after a Windows update has put itself first again).
-    own=$(findmnt -no SOURCE ${esp})
     disk=/dev/$(lsblk -no PKNAME "$own")
     part=$(lsblk -no PARTN "$own" | tr -d ' ')
     entry() { efibootmgr | awk '/ ALIS boot picker/ { sub(/^Boot/, "", $1); sub(/\*$/, "", $1); print $1; exit }'; }
@@ -106,9 +136,20 @@ let
           *) echo "Boot picker: waits $t seconds, then starts the last one used" ;;
         esac
         exit 0 ;;
+      drives)
+        grep '^# ALIS boot partition' "$f" | sed 's/^# //'; exit 0 ;;
+      log)
+        [ "$(id -u)" = 0 ] || { echo "Run with sudo: sudo alis-boot-picker log [on|off]" >&2; exit 1; }
+        case "''${2:-show}" in
+          on) grep -q '^log_level' "$f" || ${pkgs.gnused}/bin/sed -i '1a log_level 1' "$f"; sync; echo "Logging on: restart, then run: sudo alis-boot-picker log" ;;
+          off) ${pkgs.gnused}/bin/sed -i '/^log_level/d' "$f"; rm -f ${dir}/refind.log; sync; echo "Logging off." ;;
+          *) [ -e ${dir}/refind.log ] || { echo "No log yet: run 'sudo alis-boot-picker log on' and restart." >&2; exit 1; }
+             ${pkgs.glibc.bin}/bin/iconv -f UTF-16 -t UTF-8 ${dir}/refind.log ;;
+        esac
+        exit 0 ;;
       off) v=-1 ;;
       forever) v=0 ;;
-      *[!0-9]*) echo "Use: alis-boot-picker [SECONDS|forever|off]" >&2; exit 1 ;;
+      *[!0-9]*) echo "Use: alis-boot-picker [SECONDS|forever|off|drives|log [on|off]]" >&2; exit 1 ;;
       *) v=$1 ;;
     esac
     [ "$(id -u)" = 0 ] || { echo "Run with sudo: sudo alis-boot-picker $1" >&2; exit 1; }
