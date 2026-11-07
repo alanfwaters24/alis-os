@@ -69,8 +69,20 @@ System Settings → Appearance (pick "ALIS Glass" there to get it back):
 - **Floating glass dock:** a rounded see-through bar floating above the bottom
   edge, the ALIS logo as the start button, Dashboard / PANE / Files /
   OnlyOffice / Kate / Settings pinned
-- **Office:** LibreOffice follows the ALIS look fully; OnlyOffice (most
-  Word-like) is set to its own dark theme, since it can't be fully skinned
+- **Icons, all in ALIS duotone** (one set of colour rules, `pkgs/alis-icons/recolour.py`):
+  - system icons: Papirus-Dark recoloured (`pkgs/alis-icons`, "ALIS")
+  - ALIS apps: each app's own icon from its repo, so the PC matches the phone
+    apps (`artwork/apps`: NEST, DOSE, ARCH, STALL, VAULT, Assistant)
+  - LibreOffice toolbars: its Breeze Dark set recoloured, an "ALIS" icon style
+    (`pkgs/alis-libreoffice-icons`)
+  - dock, tray, pop-ups: an "ALIS Glass" Plasma style (`pkgs/alis-plasma-theme`)
+  - cursors: Breeze Dark reshaded, dark ALIS green with a teal edge (`pkgs/alis-cursors`)
+- **Office:** LibreOffice follows the ALIS look fully. OnlyOffice gets an
+  "ALIS" interface theme (its Dark theme in ALIS colours,
+  `pkgs/alis-onlyoffice-theme`); its toolbar icons are built into the app and
+  can't be swapped
+- Each of these is switched on once per person at login with its own marker,
+  without resetting the dock or layout; choosing something else afterwards sticks
 
 Code: `pkgs/alis-fonts`, `pkgs/alis-glass-kvantum` (generated from
 Kvantum's KvFlat), `pkgs/alis-lookandfeel` (the Global Theme + dock layout),
@@ -386,7 +398,8 @@ Backblaze B2 copy of DataKeeper covers it off-site.
 - [ ] **Stage 5: ALIS Glass theme pack:** every PC/laptop gets it automatically; switch it off in System Settings like any other theme. Built one piece at a time:
   - [x] **5a Fonts:** Exo 2 / Rajdhani / Share Tech Mono packaged and used system-wide
   - [x] **5b Chromium → PANE:** ALIS Glass theme, ALIS start page with module tiles, ALIS bookmarks, DuckDuckGo, uBlock Origin Lite, dark mode
-  - [x] **5c KDE apps:** Kvantum "ALIS Glass" frosted style, ALIS glow edge (later: ALIS icons and cursor, animated rotating edge)
+  - [x] **5c KDE apps:** Kvantum "ALIS Glass" frosted style, ALIS glow edge (later: animated rotating edge)
   - [x] **5d Desktop:** ALIS Glass Global Theme, floating glass dock, ALIS logo start button (later: graphical ALIS login + lock screen, animated boot splash)
   - [x] **5f ALIS icon theme:** every icon (tray, toolbar, folders, file types, app icons) in ALIS duotone (mint-white lines, teal/violet accents, teal glass folders), generated from the Papirus set so nothing is left in stock style
-  - [x] **5e Apps that draw their own look:** OnlyOffice dark theme; LibreOffice added as the fully-ALIS office suite
+  - [x] **5e Apps that draw their own look:** OnlyOffice ALIS theme; LibreOffice ALIS toolbar icons
+  - [x] **5g The rest of the icon packs:** ALIS app icons from each app's repo, ALIS Plasma style (dock/tray), ALIS cursors

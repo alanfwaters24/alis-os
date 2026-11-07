@@ -20,8 +20,29 @@ let
   # LibreOffice's own toolbar icons, recoloured (pkgs/alis-libreoffice-icons).
   libreoffice = pkgs.libreoffice-qt6-fresh;
   loIcons = pkgs.callPackage ../pkgs/alis-libreoffice-icons { libreoffice-unwrapped = libreoffice.unwrapped; };
+  # OnlyOffice's "ALIS" interface theme (pkgs/alis-onlyoffice-theme): copied
+  # into each person's OnlyOffice theme folder every login (so updates reach
+  # them) and chosen once; picking another theme in OnlyOffice sticks.
+  ooTheme = pkgs.callPackage ../pkgs/alis-onlyoffice-theme { };
+  ooThemeSetup = pkgs.writeShellScript "alis-onlyoffice-theme" ''
+    d="$HOME/.local/share/onlyoffice/desktopeditors/uithemes"
+    mkdir -p "$d" && cp -f /run/current-system/sw/share/alis-onlyoffice/theme-alis.json "$d/" && chmod u+w "$d/theme-alis.json"
+    marker="$HOME/.config/alis-onlyoffice-theme-v1"
+    [ -e "$marker" ] && exit 0
+    ${pkgs.procps}/bin/pgrep -u "$(id -u)" -x DesktopEditors >/dev/null && exit 0
+    conf="$HOME/.config/onlyoffice/DesktopEditors.conf"
+    mkdir -p "$(dirname "$conf")"
+    if [ -e "$conf" ] && grep -q '^UITheme=' "$conf"; then
+      sed -i 's/^UITheme=.*/UITheme=theme-alis/' "$conf"
+    elif [ -e "$conf" ] && grep -q '^\[General\]' "$conf"; then
+      sed -i '/^\[General\]/a UITheme=theme-alis' "$conf"
+    else
+      printf '[General]\nUITheme=theme-alis\n' >> "$conf"
+    fi
+    touch "$marker"
+  '';
   loIconsSetup = pkgs.writeShellScript "alis-libreoffice-icons" ''
-    ${pkgs.procps}/bin/pgrep -u "$(id -u)" -f soffice.bin >/dev/null && exit 0   # not while LibreOffice is open
+    ${pkgs.procps}/bin/pgrep -u "$(id -u)" -x soffice.bin >/dev/null && exit 0   # not while LibreOffice is open
     exec ${pkgs.python3}/bin/python3 ${../pkgs/alis-libreoffice-icons/setup.py} /run/current-system/sw/share/alis-libreoffice
   '';
 in
@@ -44,6 +65,14 @@ in
       pkgs.kdePackages.qtstyleplugin-kvantum
       libreoffice
       loIcons
+      ooTheme
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-onlyoffice-theme.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS OnlyOffice theme
+        Exec=${ooThemeSetup}
+        NoDisplay=true
+      '')
       (pkgs.writeTextDir "etc/xdg/autostart/alis-libreoffice-icons.desktop" ''
         [Desktop Entry]
         Type=Application
@@ -54,7 +83,7 @@ in
       pkgs.hunspellDicts.en_GB-ise
     ];
     # /run/current-system/sw/share/alis-libreoffice stays put across updates.
-    environment.pathsToLink = [ "/share/Kvantum" "/share/alis-libreoffice" ];
+    environment.pathsToLink = [ "/share/Kvantum" "/share/alis-libreoffice" "/share/alis-onlyoffice" ];
 
     # Defaults for everyone (KDE reads these until a person changes them).
     environment.etc."xdg/kdeglobals".text = ''

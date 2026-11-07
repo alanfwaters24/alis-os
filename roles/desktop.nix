@@ -48,9 +48,9 @@ let
     kwriteconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin org.kde.image || true
     kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General \
       --key Image file:///etc/alis/artwork/splash.png || true
-    # OnlyOffice: its own dark theme (it doesn't follow system themes).
+    # OnlyOffice: its ALIS theme (modules/theme.nix), dark if that's missing.
     oo="$HOME/.config/onlyoffice/DesktopEditors.conf"
-    if [ ! -e "$oo" ]; then mkdir -p "$(dirname "$oo")"; printf '[General]\nUITheme=theme-dark\n' > "$oo"; fi
+    if [ ! -e "$oo" ]; then mkdir -p "$(dirname "$oo")"; printf '[General]\nUITheme=theme-alis\n' > "$oo"; fi
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
 

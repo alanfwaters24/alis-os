@@ -204,3 +204,17 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 **Tested** in QEMU + OVMF with an ALIS drive and a Windows-style drive, using the real install script's output: tiles + highlight render; arrows + Enter start the right system; after restarting, last used (Windows) is preselected; only Shut down / Restart buttons.
 **Problems found by testing:** manual Windows entry by partition GUID failed in test (identical FAT serials on my test disks — real disks differ — but switched to rEFInd's own Windows scan anyway, more robust); rEFInd 0.14.2 `showtools` keeps the leftover defaults (padded the list with absent tools); `enable_mouse` hides the keyboard highlight and arrows+Enter started the wrong tile → mouse is opt-in (`alis.bootPicker.mouse`), on-screen hint says arrow keys.
 **Not tested here:** the real PC's firmware (Asus Z590) and efibootmgr on real NVRAM.
+
+## 2026-11-07 — App icons from the repos + the rest of the icon packs in ALIS style
+
+**Asked:** check dose, arch, stall, vault and assistant repos for icons to use in ALIS OS; then make the remaining icon packs look ALIS (LibreOffice etc.).
+**Found:** arch-store (the ALIS App Store; `arch` repo is empty) has store icons for ALIS NEST, DOSE, VAULT, ALIS Assistant and the store itself; alis-stall has favicon.svg; dose has icon-512; alis-assistant has a vector launcher (helix). No separate VAULT repo — VAULT's icon lives in arch-store.
+**Answers (picker):** use the store's NEST icon for the dashboard; VAULT icon opens the NAS web admin; packs = LibreOffice toolbars, cursors, dock & tray, and check OnlyOffice.
+**Done:**
+- `artwork/apps/` (sources noted in its README): alis-dashboard/dose/arch/vault (PNG, vault rounded) + alis-stall/alis-assistant (SVG), installed as named hicolor icons; module launchers use `alis-<module>` when present; new `vault` module (TrueNAS UI, 192.168.1.252:80); Assistant buttons use alis-assistant / mic-muted / stop icons.
+- Shared colour rules split out to `pkgs/alis-icons/recolour.py` (system icon output verified byte-identical).
+- LibreOffice: `images_alis_svg.zip` from its Breeze Dark SVG set; per-person login step adds the folder to LibreOffice's Iconset UserPaths + SymbolStyle=alis_svg (no LibreOffice rebuild). Tested in a real LibreOffice window under sway: style loads; setup tested on an existing and a fresh profile.
+- Cursors: Breeze Dark SVG cursors recoloured (body ALIS dark green, teal edge, violet badges, ALIS red not-allowed), Xcursor files rendered with xcursorgen at 7 sizes; default via /etc/xdg/kcminputrc, SDDM, Global Theme, one-off switch.
+- Plasma style "alis": Breeze graphics recoloured + ALIS Glass colours file; default via /etc/xdg/plasmarc, Global Theme, first-login, one-off switch.
+- OnlyOffice: no icon swapping possible (baked in); "ALIS" UI theme generated from its own Dark theme CSS (dark greys → deep ALIS greens), copied to ~/.local/share/onlyoffice/desktopeditors/uithemes each login and chosen once. Could NOT run OnlyOffice in the test container (its Chromium crashes here, Dark theme too) — needs checking on the PC.
+- Bug caught in testing: `pgrep -f` matched any command line mentioning DesktopEditors → switched both office checks to `pgrep -x`.
