@@ -67,6 +67,9 @@ pkgs.testers.runNixOSTest {
         machine.succeed("udevadm settle; mkfs.vfat -n SYSTEM /dev/vdb1")
         machine.succeed("mkdir -p /mnt/win && mount /dev/vdb1 /mnt/win && mkdir -p /mnt/win/EFI/Microsoft/Boot")
         machine.succeed("cp /etc/fakewin/bootmgfw.efi /etc/fakewin/refind.conf /mnt/win/EFI/Microsoft/Boot/ && umount /mnt/win")
+        # Like a real Windows install: its own entry in the PC's boot list.
+        machine.succeed("efibootmgr -q -c -d /dev/vdb -p 1 -l '\\EFI\\Microsoft\\Boot\\bootmgfw.efi' -L 'Windows Boot Manager'")
+        print(machine.succeed("efibootmgr -v"))
 
     with subtest("a rebuild installs the picker and puts it first"):
         machine.succeed("/run/current-system/bin/switch-to-configuration boot")
@@ -75,7 +78,7 @@ pkgs.testers.runNixOSTest {
         assert "not found" not in drives, drives
         conf = machine.succeed("cat /boot/EFI/alis-picker/refind.conf")
         print(conf)
-        assert conf.count("volume ") == 2, conf
+        assert "firmware_bootnum" in conf, conf
         order = machine.succeed("efibootmgr")
         print(order)
         first = order.split("BootOrder: ")[1].split(",")[0].strip()

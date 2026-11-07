@@ -46,15 +46,12 @@ let
   install = pkgs.writeShellScript "alis-boot-picker-install" ''
     set -u
     export PATH=${lib.makeBinPath (with pkgs; [ coreutils util-linux efibootmgr gnugrep gnused gawk ])}
-    mkdir -p ${dir}/alis ${dir}/icons ${dir}/fonts ${dir}/drivers_x64
+    mkdir -p ${dir}/alis ${dir}/icons ${dir}/fonts
+    rm -rf ${dir}/drivers_x64
 
     cp ${refind}/share/refind/refind_x64.efi ${dir}/refind_x64.efi
     cp ${refind}/share/refind/icons/func_*.png ${refind}/share/refind/icons/mouse.png ${dir}/icons/
     cp ${refind}/share/refind/fonts/ubuntu-mono-24.png ${dir}/fonts/
-    # Loading any driver makes rEFInd connect every drive first. Without it,
-    # PCs with "Fast Boot" (and the test VM) only wake the boot drive, so the
-    # Windows drive is "Not Found". (ext4: reads Linux drives, changes nothing.)
-    cp ${refind}/share/refind/drivers_x64/ext4_x64.efi ${dir}/drivers_x64/
     cp ${theme}/*.png ${dir}/alis/
     # The Windows tile's picture: rEFInd picks it by the loader's name from
     # its own icons folder (a tile's own "icon" would be looked up on the
@@ -77,6 +74,11 @@ let
       [ -n "$win" ] && break
     done < <(lsblk -rno PATH,PARTTYPE,PARTUUID)
     rmdir "$tmp"
+    # Windows' own entry in the PC's boot list (the one F8 shows). Starting
+    # that lets the firmware wake the Windows drive itself: with "Fast Boot"
+    # firmware only wakes the boot drive, so rEFInd can't open the Windows
+    # drive directly (seen in the test VM: "Not Found").
+    winboot=$(efibootmgr | awk '/ Windows Boot Manager/ { sub(/^Boot/, "", $1); sub(/\*$/, "", $1); print $1; exit }')
 
     # Keep the wait and the log setting chosen with `alis-boot-picker`.
     timeout=$(sed -n 's/^timeout //p' ${conf} 2>/dev/null)
@@ -86,7 +88,7 @@ let
     {
       echo "# Written by ALIS OS (modules/boot-picker.nix) on every rebuild."
       echo "# Change the wait with: sudo alis-boot-picker 30|forever|off"
-      echo "# ALIS boot partition: $alis   Windows boot partition: ''${win:-not found}"
+      echo "# ALIS boot partition: $alis   Windows boot partition: ''${win:-not found}   Windows boot entry: ''${winboot:-not found}"
       [ -n "$log" ] && echo "log_level $log"
       echo "timeout $timeout"
       echo "default_selection +"
@@ -100,7 +102,14 @@ let
       echo '  icon /EFI/alis-picker/alis/os_alis.png'
       echo '  loader /EFI/systemd/systemd-bootx64.efi'
       echo '}'
-      if [ -n "$win" ]; then
+      if [ -n "$winboot" ]; then
+        echo
+        echo 'menuentry "Windows" {'
+        [ -n "$alis" ] && echo "  volume $alis"
+        echo '  icon /EFI/alis-picker/alis/os_windows.png'
+        echo "  firmware_bootnum $winboot"
+        echo '}'
+      elif [ -n "$win" ]; then
         echo
         echo 'menuentry "Windows" {'
         echo "  volume $win"
@@ -108,7 +117,7 @@ let
         echo '}'
       fi
     } > ${conf}.tmp && mv ${conf}.tmp ${conf}
-    [ -n "$win" ] || echo "ALIS boot picker: no Windows boot partition found; showing ALIS OS only."
+    [ -n "$win$winboot" ] || echo "ALIS boot picker: no Windows found; showing ALIS OS only."
 
     # Make the picker the first thing the PC starts (re-checked every rebuild,
     # e.g. after a Windows update has put itself first again).
