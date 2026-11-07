@@ -224,3 +224,15 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 **Seen (photos):** one tile with a "missing picture" box; "Not Found while loading systemd-bootx64.efi"; "Error setting graphics mode 2147483647 x 2147483647" (resolution max unsupported); no Windows tile.
 **Cause (reproduced in QEMU):** a rEFInd tile's icon and loader are looked up on that tile's *volume*; on the real PC rEFInd's guess of the volume for the ALIS entry was wrong, and the Windows auto-scan found nothing.
 **Fix:** every tile names its drive by partition ID (found at rebuild: ALIS from /boot, Windows = the other EFI partition holding bootmgfw.efi); scanning off (manual entries only); Windows tile's picture via rEFInd's own icons folder (os_win8.png); `resolution max` removed. Tested in QEMU: both tiles start the right system. Added `sudo alis-boot-picker drives` and `sudo alis-boot-picker log on|off` (rEFInd log, shown decoded) for the next real-PC check.
+
+## 2026-11-07 (overnight) — Boot picker tested end to end in a VM; Windows tile reworked
+
+**Asked:** "You can work on this overnight" (after the picker failed on the real office PC).
+**Done:** `tests/boot-picker.nix` (flake check `boot-picker`): UEFI VM with ALIS installed (systemd-boot) + a second drive made into a "Windows" EFI partition with a stand-in bootmgfw.efi and a "Windows Boot Manager" firmware entry; runs the real `switch-to-configuration boot`, then restarts through the picker with screenshots. Ran without KVM (TCG, `--option extra-system-features kvm`), ~10 min per run; 9 runs.
+**Found along the way:**
+1. Second drive not visible to rEFInd at all (only the boot drive is connected by firmware that boots by a fixed boot list — same idea as Asus "Fast Boot"): Windows tile by partition ID → "Not Found" (same error as the real PC). Loading an rEFInd driver did not connect it.
+2. Fix: the Windows tile now uses `firmware_bootnum <Windows Boot Manager entry>` — rEFInd asks the firmware to start Windows' own boot entry, and the firmware wakes the drive itself. Partition-ID entry kept only as a fallback when no such entry exists.
+3. OVMF deletes boot entries for drives not on QEMU's boot list (test-only; a real PC keeps them) → test gives the Windows drive a bootindex.
+4. Test VMs stop instead of rebooting → test powers back on after the Windows tile.
+5. Cosmetic: rEFInd draws a drive badge on firmware entries even with badges hidden → blank badge icons.
+**Result:** final run passes all steps: picker → ALIS OS; picker → Windows (firmware log: "starting Boot0006 Windows Boot Manager", stand-in Windows screen); next start preselects Windows; back to ALIS; Windows Boot Manager entry still present.

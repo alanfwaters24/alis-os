@@ -341,15 +341,25 @@ picked by mistake.
 `alis.bootPicker.enable = true;` in a machine's folder (on for the office PC).
 It's rEFInd, themed ALIS (`modules/boot-picker.nix`, artwork in
 `artwork/boot-picker.nix`), on ALIS's own boot partition in front of ALIS's
-normal boot loader; Windows is found on its own drive and nothing there is
+normal boot loader. The ALIS OS tile names ALIS's boot partition by its ID;
+the Windows tile starts Windows' own entry in the PC's boot list ("Windows
+Boot Manager", the one F8 shows), so the PC's firmware wakes the Windows
+drive itself, even with Fast Boot on. Nothing on the Windows drive is
 changed. Every rebuild re-writes it and makes sure it's first in the PC's
 boot order (Windows updates sometimes push themselves first).
+
+Tested end to end (`nix build .#checks.x86_64-linux.boot-picker`): a UEFI
+virtual PC with ALIS installed and a second "Windows" drive; the real rebuild
+step installs it, then restarts go picker → ALIS OS, picker → Windows,
+next start remembers Windows, and back to ALIS OS.
 
 ```
 sudo alis-boot-picker 30        # wait 30 s, then start the last one used (default)
 sudo alis-boot-picker forever   # wait until someone picks
 sudo alis-boot-picker off       # start the last one used straight away (hold a key for the menu)
 alis-boot-picker                # show the current setting
+sudo alis-boot-picker drives    # what the tiles point at
+sudo alis-boot-picker log on    # record the next start; `sudo alis-boot-picker log` to read it
 ```
 
 Older ALIS versions: pick ALIS OS, then hold **Space**. Mouse support is
