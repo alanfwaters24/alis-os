@@ -109,8 +109,15 @@ pkgs.testers.runNixOSTest {
         # restarting, so power it back on: the firmware then starts Windows.
         machine.wait_for_shutdown()
         machine.start()
-        time.sleep(40)
+        time.sleep(15)
         machine.screenshot("windows")
+        # If the firmware didn't start Windows, the picker is back: go to
+        # ALIS and show what rEFInd left in the firmware (BootNext) + its log.
+        machine.send_key("left")
+        machine.send_key("ret")
+        machine.wait_for_unit("multi-user.target")
+        print(machine.succeed("efibootmgr -v"))
+        print(machine.succeed("alis-boot-picker log | grep -i -E 'firmware|bootnum|BootNext|reboot|Windows|Error' | head -40"))
 
     with subtest("next power on remembers Windows"):
         machine.crash()
