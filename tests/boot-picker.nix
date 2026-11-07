@@ -104,7 +104,12 @@ pkgs.testers.runNixOSTest {
         time.sleep(2)
         machine.screenshot("picker-windows-selected")
         machine.send_key("ret")
-        time.sleep(20)
+        # The Windows tile restarts the PC into Windows' own boot entry (the
+        # firmware wakes the Windows drive). Test VMs stop instead of
+        # restarting, so power it back on: the firmware then starts Windows.
+        machine.wait_for_shutdown()
+        machine.start()
+        time.sleep(40)
         machine.screenshot("windows")
 
     with subtest("next power on remembers Windows"):
