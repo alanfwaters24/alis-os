@@ -15,7 +15,7 @@ library=org.kde.breeze
 theme=Breeze
 
 [kcminputrc][Mouse]
-cursorTheme=breeze_cursors
+cursorTheme=ALIS-cursors
 
 [KSplash]
 Theme=org.kde.breeze.desktop

@@ -95,6 +95,15 @@ let
     mkdir -p "$(dirname "$marker")" && touch "$marker"
   '';
 
+  # One-off switch to the ALIS cursors (own marker; a later pick sticks).
+  cursorsSwitch = pkgs.writeShellScript "alis-cursors-switch" ''
+    marker="$HOME/.config/alis-cursors-v1"
+    [ -e "$marker" ] && exit 0
+    sleep 5
+    plasma-apply-cursortheme ALIS-cursors || exit 0
+    mkdir -p "$(dirname "$marker")" && touch "$marker"
+  '';
+
   # One-off: the floating dock moves from the middle to the bottom-left.
   # Only touches the ALIS dock (bottom panel with the start button).
   dockLeft = pkgs.writeShellScript "alis-dock-left" ''
@@ -165,6 +174,14 @@ in
         Type=Application
         Name=ALIS start button
         Exec=${launcherFix}
+        X-KDE-autostart-phase=2
+        NoDisplay=true
+      '')
+      (pkgs.writeTextDir "etc/xdg/autostart/alis-cursors-switch.desktop" ''
+        [Desktop Entry]
+        Type=Application
+        Name=ALIS cursors
+        Exec=${cursorsSwitch}
         X-KDE-autostart-phase=2
         NoDisplay=true
       '')

@@ -15,6 +15,7 @@ let
   kvantumTheme = pkgs.callPackage ../pkgs/alis-glass-kvantum { };
   lookandfeel = pkgs.callPackage ../pkgs/alis-lookandfeel { };
   icons = pkgs.callPackage ../pkgs/alis-icons { };
+  cursors = pkgs.callPackage ../pkgs/alis-cursors { };
   # LibreOffice's own toolbar icons, recoloured (pkgs/alis-libreoffice-icons).
   libreoffice = pkgs.libreoffice-qt6-fresh;
   loIcons = pkgs.callPackage ../pkgs/alis-libreoffice-icons { libreoffice-unwrapped = libreoffice.unwrapped; };
@@ -37,6 +38,7 @@ in
       kvantumTheme
       lookandfeel
       icons
+      cursors
       pkgs.kdePackages.qtstyleplugin-kvantum
       libreoffice
       loIcons
@@ -72,6 +74,14 @@ in
       [Icons]
       Theme=ALIS
     '';
+
+    # ALIS cursors (pkgs/alis-cursors), also on the login screen.
+    environment.etc."xdg/kcminputrc".text = ''
+      [Mouse]
+      cursorTheme=ALIS-cursors
+    '';
+    services.displayManager.sddm.settings.Theme.CursorTheme = "ALIS-cursors";
+    xdg.icons.fallbackCursorThemes = [ "ALIS-cursors" ];
 
     # Blur behind see-through windows, menus and the dock.
     environment.etc."xdg/kwinrc".text = ''
