@@ -236,3 +236,8 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 4. Test VMs stop instead of rebooting → test powers back on after the Windows tile.
 5. Cosmetic: rEFInd draws a drive badge on firmware entries even with badges hidden → blank badge icons.
 **Result:** final run passes all steps: picker → ALIS OS; picker → Windows (firmware log: "starting Boot0006 Windows Boot Manager", stand-in Windows screen); next start preselects Windows; back to ALIS; Windows Boot Manager entry still present.
+
+## 2026-11-08 — Office PC: NEST and ALIS apps over Tailscale
+
+**Asked:** boot picker works on the office PC. Does NEST use the IP or the Tailscale address? → chose "Tailscale only" for the office PC.
+**Done:** `alis.network = "tailscale"` in machines/office-pc: NEST https://dev-automation.tail80e958.ts.net (built-in copy still the fallback), DOSE/ARCH/GLANCE/NOVA/FUEL/STALL/SWAP/push on their Tailscale ports; apps with no Tailscale address in registry.nix (SCORE, Home Assistant, VAULT, EARN, PENY, POST, SNAP, ROAM, ARCADE, Suite, Speak) stay on the home network. Window names (dock icons) follow automatically.

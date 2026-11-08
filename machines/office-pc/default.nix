@@ -15,5 +15,10 @@
   # Starts the last one used after 30 s; change with `sudo alis-boot-picker`.
   alis.bootPicker.enable = true;
 
+  # NEST and the other ALIS apps over Tailscale (HTTPS), even at home; apps
+  # with no Tailscale address yet (e.g. SCORE, Home Assistant, VAULT) still
+  # use the home network. Needs Tailscale signed in (it is on this PC).
+  alis.network = "tailscale";
+
   # Not left on 24/7 (ALIS-CORE: electricity cost), so nothing always-on here.
 }
