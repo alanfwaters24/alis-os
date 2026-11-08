@@ -23,10 +23,16 @@ let
   openUrl = pkgs.callPackage ../pkgs/alis-open-url.nix { };
 
   lanUrl = r: if r.port != null then "${r.scheme or "http"}://${r.host.lan}:${toString r.port}" else null;
+  # Tailscale address: the HTTPS one (tailscale serve) when a module has one,
+  # else the machine's Tailscale name on the module's normal port (plain
+  # http; Tailscale itself encrypts the connection). null if the machine
+  # isn't on Tailscale (the Brain VM, for now).
   tsUrl = r:
-    if r.host.ts == null || r.tsPort == null then null
+    if r.host.ts == null then null
     else if r.tsPort == 443 then "https://${r.host.ts}"
-    else "https://${r.host.ts}:${toString r.tsPort}";
+    else if r.tsPort != null then "https://${r.host.ts}:${toString r.tsPort}"
+    else if r.port != null then "${r.scheme or "http"}://${r.host.ts}:${toString r.port}"
+    else null;
 
   # "tailscale": Tailscale first. "lan" and "auto": home network first
   # ("auto" then falls back to Tailscale, see fallbackUrl).
