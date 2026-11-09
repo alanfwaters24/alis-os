@@ -378,8 +378,8 @@ add-in cards stay trusted, and Windows sees Secure Boot as on.
 One-time setup on the PC (Asus ROG Z590 BIOS wording):
 
 1. Update ALIS and restart (`sudo nixos-rebuild switch --flake ~/alis-os#office-pc`).
-2. `sudo alis-secure-boot` — should show Secure Boot off and every ALIS boot file
-   signed (✓).
+2. `sudo alis-secure-boot sign` — makes this PC's key if needed and signs every
+   ALIS boot file (the list should be all ✓).
 3. Restart into the BIOS (**Del**), Advanced Mode (**F7**) → **Boot → Secure Boot**:
    OS Type **Windows UEFI mode** → **Key Management → Clear Secure Boot keys**
    → Yes. (The PC is now in "Setup Mode": nothing is checked until step 4.)
@@ -391,6 +391,12 @@ One-time setup on the PC (Asus ROG Z590 BIOS wording):
 Way back at any time: BIOS → Secure Boot → Key Management → **Install default
 Secure Boot keys** (Windows-only, as from the factory), or set Secure Boot to
 off.
+
+Tested end to end (`nix build .#checks.x86_64-linux.secure-boot`): UEFI firmware
+with Secure Boot and a TPM, starting in Setup Mode; `alis-secure-boot enroll`;
+restart → Secure Boot enabled (user mode), picker → ALIS OS, picker → Windows.
+The test firmware dropped Windows' boot entry when the keys changed; the
+picker now puts it back by itself.
 
 ## Updates and backups (installed machines)
 

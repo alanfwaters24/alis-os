@@ -244,3 +244,14 @@ After rebuilding (f4d98b1) and logging back in: ALIS background showing, and Dol
 **Follow-up:** "that's all modules as well" → every module gets a Tailscale address: its HTTPS `tailscale serve` port where it has one, else `http://<machine's Tailscale name>:<usual port>` (Tailscale encrypts it). Office PC now reaches all dev-automation modules and VAULT/FLICK (truenas-scale) over Tailscale. Home Assistant, Ollama and voice stay on the home network: the Brain VM isn't on Tailscale (registry.nix `brainVm.ts = null`). Laptop "auto" mode gains these Tailscale fallbacks too.
 
 **Confirmed 2026-11-08:** office PC updated to 9458091; boot picker works on the real PC; modules over Tailscale "look ok".
+
+## 2026-11-09 — Secure Boot for the office PC (Fortnite tournaments for Ethan)
+
+**Asked:** Secure Boot must be on for Fortnite tournaments; the dual-boot needs a way round it.
+**Answers (picker):** ALIS signs itself (recommended); BitLocker still off; TPM unknown (Windows 11 → very likely on).
+**Done:**
+- Flake input Lanzaboote v1.2.0 (git+https; its crane / rust-overlay pinned to the revisions it shipped with, dev git hooks skipped) — nixpkgs dropped its own lanzaboote.
+- `modules/secure-boot.nix`: `alis.secureBoot.enable` → Lanzaboote (signed systemd-boot + UKIs, same EFI/systemd path the picker uses), keys auto-made at /var/lib/sbctl, sbctl; `alis-secure-boot status|sign|enroll` (enroll = check Setup Mode, sign everything, `sbctl enroll-keys --microsoft`). Enabled on office-pc.
+- Boot picker: now also installed by a systemd service (Lanzaboote has no install hook), signs refind_x64.efi with the PC key when it exists, and re-creates Windows' firmware boot entry if it has gone missing.
+- `tests/secure-boot.nix` (check `secure-boot`): OVMF Secure Boot + TPM, Setup Mode → enroll → restart: `Secure Boot: enabled (user)`, picker → ALIS OS, picker → Windows Boot Manager. 4 runs; found the firmware dropping the Windows entry after key enrolment → self-repair added; final run passes.
+**Not done here:** the real BIOS step on the Asus Z590 (Clear Secure Boot keys) — user to do; way back = "Install default Secure Boot keys".
