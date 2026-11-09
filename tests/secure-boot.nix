@@ -96,6 +96,8 @@ pkgs.testers.runNixOSTest {
         print(status)
         assert "Secure Boot: enabled" in status, status
         print(machine.succeed("alis-secure-boot status"))
+        print(machine.succeed("efibootmgr -v"))
+        print(machine.succeed("alis-boot-picker drives"))
 
     with subtest("picker -> Windows with Secure Boot on"):
         machine.shutdown()
