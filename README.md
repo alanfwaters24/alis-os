@@ -366,6 +366,32 @@ Older ALIS versions: pick ALIS OS, then hold **Space**. Mouse support is
 `alis.bootPicker.mouse = true;`, off by default: in testing it hid the
 keyboard highlight and arrows + Enter could start the wrong system.
 
+### Secure Boot (office PC, for Fortnite tournaments)
+
+`alis.secureBoot.enable = true;` (`modules/secure-boot.nix`). Some Windows
+games' anti-cheat (Fortnite tournaments) need Secure Boot on. With it on, the
+PC only starts signed boot files, so ALIS signs its own (Lanzaboote) with a
+key made on the PC (`/var/lib/sbctl`, never in git), and that key is added to
+the firmware *next to* Microsoft's keys: Windows, the graphics card and other
+add-in cards stay trusted, and Windows sees Secure Boot as on.
+
+One-time setup on the PC (Asus ROG Z590 BIOS wording):
+
+1. Update ALIS and restart (`sudo nixos-rebuild switch --flake ~/alis-os#office-pc`).
+2. `sudo alis-secure-boot` — should show Secure Boot off and every ALIS boot file
+   signed (✓).
+3. Restart into the BIOS (**Del**), Advanced Mode (**F7**) → **Boot → Secure Boot**:
+   OS Type **Windows UEFI mode** → **Key Management → Clear Secure Boot keys**
+   → Yes. (The PC is now in "Setup Mode": nothing is checked until step 4.)
+   **F10** to save and exit.
+4. In the picker choose **ALIS OS**, then `sudo alis-secure-boot enroll`.
+5. Restart. Secure Boot is on: both tiles still work. In Windows,
+   **System Information** shows *Secure Boot State: On*.
+
+Way back at any time: BIOS → Secure Boot → Key Management → **Install default
+Secure Boot keys** (Windows-only, as from the factory), or set Secure Boot to
+off.
+
 ## Updates and backups (installed machines)
 
 **Updates.** Every night around 03:30 (or soon after start-up if the machine was
