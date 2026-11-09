@@ -20,5 +20,9 @@
   # use the home network. Needs Tailscale signed in (it is on this PC).
   alis.network = "tailscale";
 
+  # Secure Boot on (Fortnite tournaments need it in Windows): ALIS signs its
+  # own boot files; one-time key setup in README "Secure Boot".
+  alis.secureBoot.enable = true;
+
   # Not left on 24/7 (ALIS-CORE: electricity cost), so nothing always-on here.
 }

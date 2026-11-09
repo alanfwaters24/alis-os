@@ -64,6 +64,72 @@
         "url": "https://github.com/alanfwaters24/glance"
       }
     },
+    "lanzaboote": {
+      "inputs": {
+        "crane": [
+          "lanzaboote-crane"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "pre-commit": [],
+        "rust-overlay": [
+          "lanzaboote-rust-overlay"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790423250,
+        "narHash": "sha256-sr4Kfp6yaXUeyKL6n0Y8/ElcR3momIRC20HFc+LF22s=",
+        "ref": "refs/tags/v1.2.0",
+        "rev": "c1c5edd31802d181c8aa2c71588995d93425d650",
+        "revCount": 1116,
+        "type": "git",
+        "url": "https://github.com/nix-community/lanzaboote"
+      },
+      "original": {
+        "ref": "refs/tags/v1.2.0",
+        "type": "git",
+        "url": "https://github.com/nix-community/lanzaboote"
+      }
+    },
+    "lanzaboote-crane": {
+      "locked": {
+        "lastModified": 1789760033,
+        "narHash": "sha256-jtT4yxZpR8seYnlCMMWSSPlFN92zO6ICuZ8pJrmi86k=",
+        "ref": "refs/heads/master",
+        "rev": "73b980519cefc727a5f6cc8e5c0947a2f9be6edd",
+        "revCount": 896,
+        "type": "git",
+        "url": "https://github.com/ipetkov/crane"
+      },
+      "original": {
+        "rev": "73b980519cefc727a5f6cc8e5c0947a2f9be6edd",
+        "type": "git",
+        "url": "https://github.com/ipetkov/crane"
+      }
+    },
+    "lanzaboote-rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789889921,
+        "narHash": "sha256-aL/ogiN7qZCGeNovS1f9hX73jwYIKb4Pcq6AZm57WtY=",
+        "ref": "refs/heads/master",
+        "rev": "1fb104a12a8667045559b2575d6d448ae2fbd99b",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/oxalica/rust-overlay"
+      },
+      "original": {
+        "rev": "1fb104a12a8667045559b2575d6d448ae2fbd99b",
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/oxalica/rust-overlay"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1793633738,
@@ -83,6 +149,9 @@
         "alis-live": "alis-live",
         "alis-push": "alis-push",
         "glance": "glance",
+        "lanzaboote": "lanzaboote",
+        "lanzaboote-crane": "lanzaboote-crane",
+        "lanzaboote-rust-overlay": "lanzaboote-rust-overlay",
         "nixpkgs": "nixpkgs"
       }
     }

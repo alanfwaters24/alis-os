@@ -124,6 +124,12 @@ let
     } > ${conf}.tmp && mv ${conf}.tmp ${conf}
     [ -n "$win$winboot" ] || echo "ALIS boot picker: no Windows found; showing ALIS OS only."
 
+    # Secure Boot (modules/secure-boot.nix): sign the picker with this PC's
+    # key, like the rest of ALIS's boot files.
+    if [ -e /var/lib/sbctl/keys/db/db.key ]; then
+      ${pkgs.sbctl}/bin/sbctl sign ${dir}/refind_x64.efi >/dev/null || echo "ALIS boot picker: couldn't sign it for Secure Boot"
+    fi
+
     # Make the picker the first thing the PC starts (re-checked every rebuild,
     # e.g. after a Windows update has put itself first again).
     disk=/dev/$(lsblk -no PKNAME "$own")
@@ -199,12 +205,21 @@ in
 
   config = lib.mkIf cfg.enable {
     assertions = [{
-      assertion = config.boot.loader.systemd-boot.enable;
-      message = "alis.bootPicker sits in front of systemd-boot, which must stay enabled.";
+      assertion = config.boot.loader.systemd-boot.enable || config.boot.lanzaboote.enable;
+      message = "alis.bootPicker sits in front of systemd-boot (plain or Lanzaboote's signed one).";
     }];
     # The picker is the menu now; ALIS's own menu only shows if Space is held.
     boot.loader.timeout = lib.mkDefault 0;
+    # Installed on every rebuild (plain systemd-boot) and on every start / switch
+    # (also covers Lanzaboote, which has no install hook for extras).
     boot.loader.systemd-boot.extraInstallCommands = "${install}";
+    systemd.services.alis-boot-picker = {
+      description = "Install the ALIS boot picker on the boot partition";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "generate-sb-keys.service" ];
+      unitConfig.RequiresMountsFor = esp;
+      serviceConfig = { Type = "oneshot"; RemainAfterExit = true; ExecStart = "${install}"; };
+    };
     environment.systemPackages = [ command ];
   };
 }

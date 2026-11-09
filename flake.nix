@@ -17,16 +17,32 @@
     alis-live = { url = "git+https://github.com/alanfwaters24/alis-live"; flake = false; };
     alis-push = { url = "git+https://github.com/alanfwaters24/alis-push"; flake = false; };
     glance = { url = "git+https://github.com/alanfwaters24/glance"; flake = false; };
+
+    # Secure Boot (modules/secure-boot.nix): Lanzaboote signs ALIS's boot
+    # files with the machine's own key. Its helpers are pinned to the exact
+    # versions Lanzaboote 1.2.0 shipped with; its dev-only git hooks are skipped.
+    lanzaboote = {
+      url = "git+https://github.com/nix-community/lanzaboote?ref=refs/tags/v1.2.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.crane.follows = "lanzaboote-crane";
+      inputs.rust-overlay.follows = "lanzaboote-rust-overlay";
+      inputs.pre-commit.follows = "";
+    };
+    lanzaboote-crane.url = "git+https://github.com/ipetkov/crane?rev=73b980519cefc727a5f6cc8e5c0947a2f9be6edd";
+    lanzaboote-rust-overlay = {
+      url = "git+https://github.com/oxalica/rust-overlay?rev=1fb104a12a8667045559b2575d6d448ae2fbd99b&shallow=1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, alis-dashboard, alis-live, alis-push, glance }:
+  outputs = { self, nixpkgs, alis-dashboard, alis-live, alis-push, glance, lanzaboote, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
       # Everything ALIS OS adds on top of plain NixOS, as one importable module.
       alisModule = {
-        imports = [ ./modules ];
+        imports = [ ./modules lanzaboote.nixosModules.lanzaboote ];
         alis.dashboard.src = alis-dashboard;
         alis.brain.sources = { inherit alis-live alis-push glance; };
       };
@@ -97,6 +113,8 @@
         upkeep = import ./tests/upkeep.nix { inherit pkgs alisModule; };
         # The boot picker on a UEFI machine with a second "Windows" drive.
         boot-picker = import ./tests/boot-picker.nix { inherit pkgs alisModule; };
+        # Secure Boot on (office PC, for Fortnite tournaments): enroll, then both tiles.
+        secure-boot = import ./tests/secure-boot.nix { inherit pkgs alisModule; };
         # An office PC linked to the existing Brain, HA and NAS shares.
         desktop-existing-brain = (mkAlis [{
           alis.role = "desktop";

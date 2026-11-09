@@ -23,6 +23,7 @@
     ./updates.nix
     ./backup.nix
     ./boot-picker.nix
+    ./secure-boot.nix
     ../roles/kiosk.nix
     ../roles/desktop.nix
     ../roles/laptop.nix
