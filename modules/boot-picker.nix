@@ -69,11 +69,12 @@ let
     own=$(findmnt -no SOURCE ${esp})
     alis=$(lsblk -no PARTUUID "$own" | tr a-z A-Z)
     win=""
+    windev=""
     tmp=$(mktemp -d)
     while read -r dev type puuid; do
       [ "$type" = "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" ] && [ "$dev" != "$own" ] || continue
       if mount -o ro "$dev" "$tmp" 2>/dev/null; then
-        [ -e "$tmp/EFI/Microsoft/Boot/bootmgfw.efi" ] && win=$(echo "$puuid" | tr a-z A-Z)
+        [ -e "$tmp/EFI/Microsoft/Boot/bootmgfw.efi" ] && { win=$(echo "$puuid" | tr a-z A-Z); windev=$dev; }
         umount "$tmp"
       fi
       [ -n "$win" ] && break
@@ -83,7 +84,14 @@ let
     # that lets the firmware wake the Windows drive itself: with "Fast Boot"
     # firmware only wakes the boot drive, so rEFInd can't open the Windows
     # drive directly (seen in the test VM: "Not Found").
-    winboot=$(efibootmgr | awk '/ Windows Boot Manager/ { sub(/^Boot/, "", $1); sub(/\*$/, "", $1); print $1; exit }')
+    winentry() { efibootmgr | awk '/ Windows Boot Manager/ { sub(/^Boot/, "", $1); sub(/\*$/, "", $1); print $1; exit }'; }
+    winboot=$(winentry)
+    # No entry but Windows is there (some firmware drops it, e.g. after
+    # Secure Boot keys change): put back the same entry Windows makes itself.
+    if [ -z "$winboot" ] && [ -n "$windev" ]; then
+      efibootmgr -q -c -d "/dev/$(lsblk -no PKNAME "$windev")" -p "$(lsblk -no PARTN "$windev" | tr -d ' ')" \
+        -l '\EFI\Microsoft\Boot\bootmgfw.efi' -L "Windows Boot Manager" && winboot=$(winentry)
+    fi
 
     # Keep the wait and the log setting chosen with `alis-boot-picker`.
     timeout=$(sed -n 's/^timeout //p' ${conf} 2>/dev/null)
