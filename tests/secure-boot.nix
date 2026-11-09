@@ -107,7 +107,7 @@ pkgs.testers.runNixOSTest {
         machine.send_key("ret")
         machine.wait_for_shutdown()
         machine.start()
-        machine.wait_for_console_text("starting Boot[0-9A-F]+ \\"Windows Boot Manager\\"")
+        machine.wait_for_console_text('starting Boot[0-9A-F]+ "Windows Boot Manager"')
         time.sleep(15)
         machine.screenshot("sb-windows")
   '';
